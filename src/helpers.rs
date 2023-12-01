@@ -1,5 +1,6 @@
 mod parse_bytes;
 use std::io::stdin;
+use std::num::Saturating;
 use std::ops::{Add, AddAssign, Div, Mul};
 use std::str::FromStr;
 
@@ -40,8 +41,8 @@ pub use min_heap::*;
 mod display_bytes;
 pub use display_bytes::*;
 
-mod better_vec;
-pub use better_vec::*;
+mod better_get;
+pub use better_get::*;
 
 /// Computes the triangular number.
 ///
@@ -59,6 +60,9 @@ where
 	n * (n + 1u8.into()) / 2u8.into()
 }
 
+/// Reads a value from standard input.
+///
+/// Panics if reading from stdin fails. Returns an error if parsing the resulting string fails.
 pub fn read_value<T>() -> Result<T, T::Err>
 where
 	T: FromStr,
@@ -66,6 +70,7 @@ where
 	stdin().lines().next().unwrap().unwrap().trim().parse()
 }
 
+/// [`std::iter::Sum`] but without the issue of needing to specify the output type.
 pub trait SelfSum: Iterator + Sized
 where
 	Self::Item: AddAssign + Default + Sized,
@@ -166,15 +171,19 @@ pub trait Wrap: Sized {
 		Wrapping(self)
 	}
 
+	fn wrap_saturating(self) -> Saturating<Self> {
+		Saturating(self)
+	}
+
 	fn wrap_repeat(self) -> std::iter::Repeat<Self>
 	where
 		Self: Clone,
 	{
-		std::iter::repeat(self)
+		repeat_iter(self)
 	}
 
 	fn wrap_once(self) -> std::iter::Once<Self> {
-		std::iter::once(self)
+		once_iter(self)
 	}
 
 	fn wrap_rev(self) -> Reverse<Self> {
@@ -184,15 +193,17 @@ pub trait Wrap: Sized {
 
 impl<T> Wrap for T where T: Sized {}
 
-pub fn add<T>(a: [T; 2], b: [T; 2]) -> [T; 2]
+/// Adds each element of two arrays together.
+pub fn add<const N: usize, T>(a: [T; N], b: [T; N]) -> [T; N]
 where
 	T: Add<Output = T>,
 {
-	let [a1, a2] = a;
-	let [b1, b2] = b;
-	[a1 + b1, a2 + b2]
+	let mut a = a.into_iter();
+	let mut b = b.into_iter();
+	std::array::from_fn(|_| a.next().unwrap() + b.next().unwrap())
 }
 
+/// Gets an element of a 2D slice.
 pub fn get_2d<T, V>(map: &[V], point: [isize; 2]) -> Option<&T>
 where
 	V: AsRef<[T]>,
@@ -202,7 +213,7 @@ where
 }
 
 pub use crate::dbg_small;
-/// New dbg macro modified from [`std::dbg`] that doesn't use alternate form.
+/// Modified [`std::dbg`] macro that doesn't use alternate form.
 #[macro_export]
 macro_rules! dbg_small {
     // NOTE: We cannot use `concat!` to make a static string as a format argument

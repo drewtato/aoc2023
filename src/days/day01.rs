@@ -21,10 +21,22 @@ impl Solver for Solution {
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
+		let numbers: Vec<i64> = self
+			.file
+			.trim_ascii()
+			.split(is(&b'\n'))
+			.multi_parse()
+			.unwrap();
 		"part 1 unimplemented"
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
+		let numbers: Vec<i64> = self
+			.file
+			.trim_ascii()
+			.split(is(&b'\n'))
+			.multi_parse()
+			.unwrap();
 		"part 2 unimplemented"
 	}
 

@@ -1,6 +1,7 @@
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
+/// A binary heap like [`std::collections::BinaryHeap`], but with the least element at the top
 #[derive(Debug, Clone)]
 pub struct MinHeap<T: Ord> {
 	inner: BinaryHeap<Reverse<T>>,

@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use atoi::{FromRadix10, FromRadix10Signed, FromRadix10SignedChecked};
 
+/// Trait for parsing bytes like they are `str`.
+///
 /// Examples:
 /// ```ignore
 /// # use aoc2023::helpers::FromBytes;
@@ -12,6 +14,7 @@ pub trait FromBytes: Sized {
 	fn from_bytes(bytes: &[u8]) -> Option<Self>;
 }
 
+/// Extension trait that adds the `parse` method to `[u8]`, which calls [`FromBytes::from_bytes`].
 pub trait ParseBytes {
 	fn parse<I>(&self) -> Option<I>
 	where
@@ -106,6 +109,7 @@ where
 	*s = &s[size..];
 	n
 }
+
 /// Parses an integer and modifies the slice to start after the integer. Returns 0 when no number
 /// was found.
 ///

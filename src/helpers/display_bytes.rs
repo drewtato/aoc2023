@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display};
 
+/// Wrapper to allow displaying a slice as UTF-8
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DisplaySlice<T>(pub T);
 
@@ -29,6 +30,7 @@ impl<T> DisplaySlice<T> {
 	}
 }
 
+/// Extension trait to wrap a slice in [`DisplaySlice`]
 pub trait ToDisplaySlice: Sized {
 	fn to_display_slice(self) -> DisplaySlice<Self>;
 }
@@ -51,6 +53,7 @@ impl<const N: usize> ToDisplaySlice for [u8; N] {
 	}
 }
 
+/// Wrapper to allow displaying `u8` as an ASCII character
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DisplayByte(pub u8);
 
@@ -72,6 +75,7 @@ impl DisplayByte {
 	}
 }
 
+/// Extension trait to wrap a byte in [`DisplayByte`]
 pub trait ToDisplayByte {
 	fn to_display_byte(self) -> DisplayByte;
 }
