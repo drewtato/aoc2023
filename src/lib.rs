@@ -10,7 +10,7 @@
 #![feature(coroutines)]
 #![feature(iter_from_coroutine)]
 
-pub const YEAR: u32 = 2022;
+pub const YEAR: u32 = 2023;
 pub type Res<T> = Result<T, AocError>;
 pub mod solution;
 pub use solution::Solver;

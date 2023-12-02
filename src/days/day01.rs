@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use crate::helpers::*;
 
 pub type A1 = impl Display + Debug + Clone;
@@ -21,23 +17,53 @@ impl Solver for Solution {
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
-		let numbers: Vec<i64> = self
-			.file
-			.trim_ascii()
-			.split(is(&b'\n'))
-			.multi_parse()
-			.unwrap();
-		"part 1 unimplemented"
+		let mut total = 0;
+		let mut first = 0;
+		let mut last = 0;
+		for &byte in &self.file {
+			if byte == b'\n' {
+				total += first * 10 + last;
+				first = 0;
+				last = 0;
+			}
+			for &(number, value) in NUMBERS {
+				if byte == number {
+					if first == 0 {
+						first = value;
+					}
+					last = value;
+				}
+			}
+		}
+		total
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		let numbers: Vec<i64> = self
-			.file
-			.trim_ascii()
-			.split(is(&b'\n'))
-			.multi_parse()
-			.unwrap();
-		"part 2 unimplemented"
+		let mut total = 0;
+		let mut first = 0;
+		let mut last = 0;
+		for offset in 0..self.file.len() {
+			let slice = &self.file[offset..];
+			match slice.first() {
+				None => break,
+				Some(b'\n') => {
+					total += first * 10 + last;
+					first = 0;
+					last = 0;
+				}
+				Some(_) => {
+					for &(number, value) in WORDS {
+						if slice.starts_with(number) {
+							if first == 0 {
+								first = value;
+							}
+							last = value;
+						}
+					}
+				}
+			}
+		}
+		total
 	}
 
 	fn run_any<W: std::fmt::Write>(
@@ -52,3 +78,36 @@ impl Solver for Solution {
 		}
 	}
 }
+
+const NUMBERS: &[(u8, u64)] = &[
+	(b'1', 1),
+	(b'2', 2),
+	(b'3', 3),
+	(b'4', 4),
+	(b'5', 5),
+	(b'6', 6),
+	(b'7', 7),
+	(b'8', 8),
+	(b'9', 9),
+];
+
+const WORDS: &[(&[u8], u64)] = &[
+	(b"1", 1),
+	(b"2", 2),
+	(b"3", 3),
+	(b"4", 4),
+	(b"5", 5),
+	(b"6", 6),
+	(b"7", 7),
+	(b"8", 8),
+	(b"9", 9),
+	(b"one", 1),
+	(b"two", 2),
+	(b"three", 3),
+	(b"four", 4),
+	(b"five", 5),
+	(b"six", 6),
+	(b"seven", 7),
+	(b"eight", 8),
+	(b"nine", 9),
+];
