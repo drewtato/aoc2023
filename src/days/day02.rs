@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use crate::helpers::*;
 
 pub type A1 = impl Display + Debug + Clone;
@@ -9,7 +5,7 @@ pub type A2 = impl Display + Debug + Clone;
 
 #[derive(Debug, Default, Clone)]
 pub struct Solution {
-	file: Vec<u8>,
+	games: Vec<Vec<[u64; 3]>>,
 }
 
 impl Solver for Solution {
@@ -17,15 +13,70 @@ impl Solver for Solution {
 	type AnswerTwo = A2;
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
-		Self { file }
+		let games = file
+			.trim_ascii()
+			.split(is(&b'\n'))
+			.map(|line| {
+				let (_, line) = line.split_once(is(&b' ')).unwrap();
+				let (_id, line) = line.split_once(is(&b':')).unwrap();
+				line.split(is(&b';'))
+					.map(|round| {
+						let cubes = round
+							.split(is(&b','))
+							.map(|cubes| cubes[1..].split_once(is(&b' ')).unwrap());
+						let mut red = 0;
+						let mut green = 0;
+						let mut blue = 0;
+						for (n, c) in cubes {
+							let n: u64 = n.parse().unwrap();
+							match c {
+								b"red" => red += n,
+								b"green" => green += n,
+								b"blue" => blue += n,
+								_ => panic!("bad color {:?}", c.to_display_slice()),
+							}
+						}
+						[red, green, blue]
+					})
+					.collect()
+			})
+			.collect();
+		Self { games }
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
-		"part 1 unimplemented"
+		// dbg_small!(self);
+		let valid_counts = [12, 13, 14];
+
+		self.games
+			.iter()
+			.enumerate()
+			.map(|(index, game)| {
+				let id = index + 1;
+				if is_valid(game, valid_counts) {
+					id
+				} else {
+					0
+				}
+			})
+			.sum_self()
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		"part 2 unimplemented"
+		let mut total = 0;
+		for game in &self.games {
+			let mut red = 0;
+			let mut green = 0;
+			let mut blue = 0;
+			for &[r, g, b] in game {
+				red = red.max(r);
+				green = green.max(g);
+				blue = blue.max(b);
+			}
+			let power = red * green * blue;
+			total += power;
+		}
+		total
 	}
 
 	fn run_any<W: std::fmt::Write>(
@@ -39,4 +90,14 @@ impl Solver for Solution {
 			_ => Err(AocError::PartNotFound),
 		}
 	}
+}
+
+fn is_valid(game: &[[u64; 3]], valid_counts: [u64; 3]) -> bool {
+	let [vr, vg, vb] = valid_counts;
+	for &[red, green, blue] in game {
+		if red > vr || green > vg || blue > vb {
+			return false;
+		}
+	}
+	true
 }

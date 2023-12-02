@@ -296,8 +296,7 @@ impl Settings {
 		}
 		let req = client
 			.get(&url)
-			// The prompt doesn't need the cookie
-			// .header(COOKIE, format!("session={api_key}"))
+			.set("cookie", &format!("session={api_key}"))
 			.call()?;
 		if !success(req.status()) {
 			return Err(AocError::PromptResponse {
