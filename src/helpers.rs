@@ -47,7 +47,7 @@ pub use better_get::*;
 /// Computes the triangular number.
 ///
 /// # Example
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::triangular_number;
 /// for (n, ans) in [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55].into_iter().enumerate() {
 ///     assert_eq!(triangular_number(n), ans);
@@ -94,7 +94,7 @@ where
 ///
 /// Example:
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::is;
 /// assert!(is("hello")("hello"));
 /// ```
@@ -109,19 +109,19 @@ where
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::Wrap;
 /// let i = 3;
 /// assert_eq!(Some(3), i.wrap(Some));
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::Wrap;
 /// let i = 3;
 /// assert_eq!(Box::new(3), i.wrap_box());
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::Wrap;
 /// let i = 3;
 /// assert_eq!(&3, i.refer());
@@ -129,19 +129,19 @@ where
 /// assert_eq!(&mut 3, i.refmut());
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::Wrap;
 /// let i = usize::MAX.wrap_wrapping() + 1.wrap_wrapping();
 /// assert_eq!(0, i.0);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::Wrap;
 /// let mut i = 3.wrap_repeat();
 /// assert_eq!(Some(3), i.nth(1_000_000));
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::Wrap;
 /// let mut i = 3.wrap_once();
 /// assert_eq!(Some(3), i.next());
@@ -244,7 +244,7 @@ mod tests {
 	use super::*;
 
 	#[test]
-	#[ignore]
+
 	fn neighbors() {
 		#[rustfmt::skip]
 		let v = vec![

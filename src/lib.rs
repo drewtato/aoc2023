@@ -10,6 +10,7 @@
 #![feature(coroutines)]
 #![feature(iter_from_coroutine)]
 #![feature(slice_split_once)]
+#![feature(impl_trait_in_assoc_type)]
 
 pub const YEAR: u32 = 2023;
 pub type Res<T> = Result<T, AocError>;

@@ -5,7 +5,7 @@ use atoi::{FromRadix10, FromRadix10Signed, FromRadix10SignedChecked};
 /// Trait for parsing bytes like they are `str`.
 ///
 /// Examples:
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::FromBytes;
 /// let s: String = FromBytes::from_bytes(b"hello").unwrap();
 /// assert_eq!("hello", &s);
@@ -70,7 +70,7 @@ from_bytes_integer! { i8, i16, i32, i64, i128, isize }
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"".as_slice();
 /// let n: u32 = parse_consume_unsigned(&mut s);
@@ -78,7 +78,7 @@ from_bytes_integer! { i8, i16, i32, i64, i128, isize }
 /// assert_eq!(s.len(), 0);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"abc".as_slice();
 /// let n: u32 = parse_consume_unsigned(&mut s);
@@ -86,7 +86,7 @@ from_bytes_integer! { i8, i16, i32, i64, i128, isize }
 /// assert_eq!(s.len(), 3);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"123".as_slice();
 /// let n: u32 = parse_consume_unsigned(&mut s);
@@ -94,7 +94,7 @@ from_bytes_integer! { i8, i16, i32, i64, i128, isize }
 /// assert_eq!(s.len(), 0);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"123abc".as_slice();
 /// let n: u32 = parse_consume_unsigned(&mut s);
@@ -115,7 +115,7 @@ where
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"abc".as_slice();
 /// let n: u32 = parse_consume_signed(&mut s);
@@ -123,7 +123,7 @@ where
 /// assert_eq!(s.len(), 3);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"123".as_slice();
 /// let n: u32 = parse_consume_signed(&mut s);
@@ -131,7 +131,7 @@ where
 /// assert_eq!(s.len(), 0);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"123abc".as_slice();
 /// let n: u32 = parse_consume_signed(&mut s);
@@ -139,7 +139,7 @@ where
 /// assert_eq!(s.len(), 3);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"-123abc".as_slice();
 /// let n: i32 = parse_consume_signed(&mut s);
@@ -147,7 +147,7 @@ where
 /// assert_eq!(s.len(), 3);
 /// ```
 ///
-/// ```ignore
+/// ```
 /// # use aoc2023::helpers::*;
 /// let mut s = b"+123abc".as_slice();
 /// let n: u32 = parse_consume_signed(&mut s);

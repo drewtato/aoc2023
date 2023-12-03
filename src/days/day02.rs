@@ -14,15 +14,14 @@ impl Solver for Solution {
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
 		let games = file
-			.trim_ascii()
-			.split(is(&b'\n'))
+			.lines()
 			.map(|line| {
 				let (_, line) = line.split_once(is(&b' ')).unwrap();
 				let (_id, line) = line.split_once(is(&b':')).unwrap();
-				line.split(is(&b';'))
+				line.delimiter(';')
 					.map(|round| {
 						let cubes = round
-							.split(is(&b','))
+							.delimiter(',')
 							.map(|cubes| cubes[1..].split_once(is(&b' ')).unwrap());
 						let mut red = 0;
 						let mut green = 0;
