@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::Cell;
 
 use crate::helpers::*;
 
@@ -7,7 +7,7 @@ pub type A2 = impl Display + Debug + Clone;
 
 #[derive(Debug, Default, Clone)]
 pub struct Solution {
-	file: Grid<(u8, RefCell<(u8, u32)>)>,
+	file: Grid<(u8, Cell<(u8, u32)>)>,
 }
 
 impl Solver for Solution {
@@ -90,17 +90,27 @@ impl Solver for Solution {
 							break;
 						}
 					}
+
 					if let Some(near_symbol) = near_symbol {
-						let mut count_ratio =
-							self.file[near_symbol.0][near_symbol.1].1.borrow_mut();
-						let (count, ratio) = &mut *count_ratio;
-						if *count == 0 {
-							*ratio = number;
-							*count += 1;
-						} else if *count == 1 {
-							total += *ratio * number;
-							*count += 1;
+						let cell = &self.file[near_symbol.0][near_symbol.1].1;
+						let (mut count, mut ratio) = cell.get();
+						match count {
+							// The first number, needs a second one to count
+							0 => ratio = number,
+							// The second number, we add it tentatively to the total
+							1 => {
+								ratio *= number;
+								total += ratio;
+							}
+							// There are three numbers, we remove the tetative number from the total
+							2 => total -= ratio,
+							// After three, nothing matters
+							_ => (),
 						}
+						// This will only ever be six (not even eight since adjacent digits are part
+						// of the same number)
+						count += 1;
+						cell.set((count, ratio));
 					}
 				}
 			}
