@@ -3,6 +3,8 @@ use std::collections::{BTreeSet, BinaryHeap, HashSet, LinkedList, VecDeque};
 use std::fmt::Display;
 use std::hash::Hash;
 
+use ahash::AHashSet;
+
 use super::{FromBytes, ParseBytes};
 
 /// Error type for [`multi_parse`](MultiParseBytes::multi_parse).
@@ -144,6 +146,7 @@ impl_multi_from_bytes_collection! {	BTreeSet<T> => T: FromBytes + Ord }
 impl_multi_from_bytes_collection! {	BinaryHeap<T> => T: FromBytes + Ord }
 impl_multi_from_bytes_collection! {	LinkedList<T> => T: FromBytes }
 impl_multi_from_bytes_collection! {	HashSet<T> => T: FromBytes + Eq + Hash }
+impl_multi_from_bytes_collection! {	AHashSet<T> => T: FromBytes + Eq + Hash }
 
 impl<T: FromBytes, const N: usize> MultiFromBytes for [T; N] {
 	/// An array of any length can be built with [`multi_parse`](MultiParseBytes::multi_parse).

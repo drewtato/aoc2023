@@ -44,6 +44,9 @@ pub use display_bytes::*;
 mod better_get;
 pub use better_get::*;
 
+mod more_itertools;
+pub use more_itertools::*;
+
 /// Computes the triangular number.
 ///
 /// # Example
