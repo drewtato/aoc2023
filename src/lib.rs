@@ -1,5 +1,6 @@
 #![feature(type_alias_impl_trait)]
 #![feature(array_windows)]
+#![feature(array_chunks)]
 #![feature(array_try_from_fn)]
 #![feature(byte_slice_trim_ascii)]
 #![feature(slice_take)]
