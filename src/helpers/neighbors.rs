@@ -81,8 +81,8 @@ pub trait GetNeighbors {
 	) -> NeighborCoords<Self::Neighbor, Y_LEN, X_LEN> {
 		NeighborCoords::new(
 			self.neighbors_extra_offset::<Y_LEN, X_LEN>(y, x, off_y, off_x),
-			y.wrapping_add_signed(off_y),
-			x.wrapping_add_signed(off_x),
+			y as isize + off_y,
+			x as isize + off_x,
 		)
 	}
 
@@ -93,21 +93,13 @@ pub trait GetNeighbors {
 		y: usize,
 		x: usize,
 	) -> NeighborCoords<Self::Neighbor, Y_LEN, X_LEN> {
-		NeighborCoords::new(
-			self.neighbors_extra::<Y_LEN, X_LEN>(y, x),
-			((Y_LEN as isize - 1) / -2) as usize,
-			((X_LEN as isize - 1) / -2) as usize,
-		)
+		self.neighbors_extra_offset_coords(y, x, -1, -1)
 	}
 
 	/// Iterator over all the elements from [`GetNeighbors::neighbors`] with
 	/// coordinates.
 	fn neighbors_coords(&self, y: usize, x: usize) -> NeighborCoords<Self::Neighbor, 3, 3> {
-		NeighborCoords::new(
-			self.neighbors_extra::<3, 3>(y, x),
-			y.wrapping_sub(1),
-			x.wrapping_sub(1),
-		)
+		self.neighbors_extra_coords(y, x)
 	}
 }
 
@@ -148,12 +140,12 @@ impl<'a, T, const Y_LEN: usize, const X_LEN: usize> Iterator
 }
 
 impl<'a, T, const Y_LEN: usize, const X_LEN: usize> NeighborCoords<'a, T, Y_LEN, X_LEN> {
-	fn new(neighbors: [[Option<&'a T>; X_LEN]; Y_LEN], offset_y: usize, offset_x: usize) -> Self {
+	fn new(neighbors: [[Option<&'a T>; X_LEN]; Y_LEN], offset_y: isize, offset_x: isize) -> Self {
 		Self {
 			neighbors,
 			index: 0,
-			offset_y,
-			offset_x,
+			offset_y: offset_y as usize,
+			offset_x: offset_x as usize,
 		}
 	}
 
