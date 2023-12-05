@@ -24,8 +24,8 @@ impl Solver for Solution {
 						list.delimiter(' ')
 							.filter(|s| !s.is_empty())
 							.map(|s| s.parse().unwrap())
-							.fold([0u8; 100], |mut map, number: usize| {
-								map[number] += 1;
+							.fold([false; 100], |mut map, number: usize| {
+								map[number] = true;
 								map
 							})
 					})
@@ -34,7 +34,7 @@ impl Solver for Solution {
 				winning
 					.into_iter()
 					.zip(have)
-					.filter(|&(a, b)| a == 1 && b == 1)
+					.filter(|&(a, b)| a && b)
 					.count()
 			})
 			.collect();
