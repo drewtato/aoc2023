@@ -47,6 +47,9 @@ pub use better_get::*;
 mod more_itertools;
 pub use more_itertools::*;
 
+mod numeric;
+pub use numeric::*;
+
 /// Computes the triangular number.
 ///
 /// # Example

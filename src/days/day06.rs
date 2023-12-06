@@ -9,7 +9,8 @@ pub type A2 = impl Display + Debug + Clone;
 
 #[derive(Debug, Default, Clone)]
 pub struct Solution {
-	file: Vec<u8>,
+	times: Vec<u32>,
+	distances: Vec<u32>,
 }
 
 impl Solver for Solution {
@@ -17,15 +18,55 @@ impl Solver for Solution {
 	type AnswerTwo = A2;
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
-		Self { file }
+		let [l1, l2] = file
+			.delimiter('\n')
+			.take(2)
+			.map(|line| {
+				line.split(|c| !c.is_ascii_digit())
+					.filter_empty()
+					.multi_parse()
+					.unwrap()
+			})
+			.array()
+			.unwrap();
+		Self {
+			times: l1,
+			distances: l2,
+		}
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
-		"part 1 unimplemented"
+		let mut mult = 1;
+		for (&time, &distance) in self.times.iter().zip(&self.distances) {
+			let mut winners = 0;
+			for held in 1..time {
+				let remaining = time - held;
+				if held * remaining > distance {
+					winners += 1;
+				}
+			}
+			mult *= winners;
+		}
+		mult
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		"part 2 unimplemented"
+		let time = self.times.iter().fold(0u64, |acc, &t| {
+			acc * 10u64.pow(t.length(10) as _) + t as u64
+		});
+
+		let distance = self.distances.iter().fold(0u64, |acc, &t| {
+			acc * 10u64.pow(t.length(10) as _) + t as u64
+		});
+
+		let mut winners = 0;
+		for held in 1..time {
+			let remaining = time - held;
+			if held * remaining > distance {
+				winners += 1;
+			}
+		}
+		winners
 	}
 
 	fn run_any<W: std::fmt::Write>(

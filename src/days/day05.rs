@@ -19,7 +19,7 @@ impl Solver for Solution {
 			.next()
 			.unwrap()
 			.delimiter([' ', '\n'])
-			.filter(|s| !s.is_empty())
+			.filter_empty()
 			.filter(|c| c[0].is_ascii_digit())
 			.multi_parse()
 			.unwrap();
@@ -28,7 +28,7 @@ impl Solver for Solution {
 			.map(|group| {
 				group
 					.delimiter([' ', '\n'])
-					.filter(|s| !s.is_empty())
+					.filter_empty()
 					.filter(|c| c[0].is_ascii_digit())
 					.map(|item| item.parse().unwrap())
 					.array_chunks()

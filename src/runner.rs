@@ -11,6 +11,7 @@ use std::fs::{create_dir_all, File};
 use std::hint::black_box;
 use std::io::{stdout, BufWriter};
 use std::path::PathBuf;
+use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use crate::solution::SolverSafe;
@@ -79,10 +80,10 @@ pub struct Settings {
 	#[arg(short, long, action = ArgAction::Count)]
 	pub runner_debug: u8,
 
-	#[arg(skip = None)]
-	pub client: Option<Agent>,
-	#[arg(skip = None)]
-	pub regex: Option<Regex>,
+	#[arg(skip = OnceLock::new())]
+	pub client: OnceLock<Agent>,
+	#[arg(skip = OnceLock::new())]
+	pub regex: OnceLock<Regex>,
 
 	#[arg(long)]
 	pub completions: Option<Shell>,
@@ -107,6 +108,9 @@ pub enum Mode {
 	Validate,
 	/// Validate that the output of the specified days equals the saved output in validation files.
 	V,
+	Prompt,
+	/// Retrieve the prompt and test cases
+	P,
 }
 
 macro_rules! debug_println {
@@ -144,6 +148,7 @@ impl Settings {
 			Mode::Bench | Mode::B => self.benchmark(&day_parts),
 			Mode::Save | Mode::S => self.save(&day_parts),
 			Mode::Validate | Mode::V => self.validate(&day_parts),
+			Mode::Prompt | Mode::P => self.prompt(&day_parts),
 		}?;
 
 		let runner_time = runner_time.elapsed();
@@ -262,17 +267,15 @@ impl Settings {
 	/// Get the input from the network and write it to the filesystem. Will overwrite any existing
 	/// input files.
 	fn get_input_network(&mut self, day: u32) -> Res<()> {
-		let api_key = std::fs::read_to_string("./API_KEY")?;
+		let api_key = api_key()?;
 		let api_key = api_key.trim();
 
 		// Get main input
 		let url = format!("https://adventofcode.com/{YEAR}/day/{day}/input");
 		eprintln!("Fetching {url}");
 
-		let client = self
-			.client
-			.get_or_insert_with(|| AgentBuilder::new().user_agent(USER_AGENT).build());
-		let req = client
+		let req = self
+			.client()
 			.get(&url)
 			.set("cookie", &format!("session={api_key}"))
 			.call()?;
@@ -289,12 +292,23 @@ impl Settings {
 		let input_path = input_file_name(day, 0);
 		std::fs::write(input_path, data)?;
 
-		// Get prompt and test cases
+		self.get_prompt(day, api_key)?;
+
+		Ok(())
+	}
+
+	fn client(&self) -> &Agent {
+		self.client
+			.get_or_init(|| AgentBuilder::new().user_agent(USER_AGENT).build())
+	}
+
+	fn get_prompt(&mut self, day: u32, api_key: &str) -> Result<(), AocError> {
 		let url = format!("https://adventofcode.com/{YEAR}/day/{day}");
 		if self.runner_debug > 0 {
 			eprintln!("Fetching {url}");
 		}
-		let req = client
+		let req = self
+			.client()
 			.get(&url)
 			.set("cookie", &format!("session={api_key}"))
 			.call()?;
@@ -305,15 +319,12 @@ impl Settings {
 			});
 		}
 		let text = read_to_vec(req)?;
-
-		// Save prompt
 		let prompt_path = prompt(day);
 		std::fs::write(prompt_path, &text)?;
 
 		// Save each code block as a test case
-		let regex = self
-			.regex
-			.get_or_insert_with(|| Regex::new(r"<pre>\s*<code>([^<]+)</code>\s*</pre>").unwrap());
+		let regex = self.regex();
+
 		for (i, code) in regex.captures_iter(&text).enumerate() {
 			let Ok(i) = (i + 1).try_into() else {
 				eprintln!("{}, skipping the rest", AocError::TooManyTestCases);
@@ -336,6 +347,11 @@ impl Settings {
 		}
 
 		Ok(())
+	}
+
+	fn regex(&self) -> &Regex {
+		self.regex
+			.get_or_init(|| Regex::new(r"<pre>\s*<code>([^<]+)</code>\s*</pre>").unwrap())
 	}
 
 	fn benchmark(&mut self, day_parts: &[(u32, Vec<u32>)]) -> Res<Duration> {
@@ -587,6 +603,22 @@ impl Settings {
 
 		Ok((total_time, incorrect))
 	}
+
+	fn prompt(&mut self, day_parts: &[(u32, Vec<u32>)]) -> Result<Duration, AocError> {
+		let api_key = &api_key()?;
+		for &(day, _) in day_parts {
+			self.get_prompt(day, api_key)?;
+		}
+		Ok(Duration::ZERO)
+	}
+}
+
+fn api_key() -> Result<String, AocError> {
+	let mut key = std::fs::read_to_string("./API_KEY")?;
+	while key.chars().last().is_some_and(|c| c.is_whitespace()) {
+		key.pop();
+	}
+	Ok(key)
 }
 
 fn read_to_vec(req: ureq::Response) -> Res<Vec<u8>> {
