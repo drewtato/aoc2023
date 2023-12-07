@@ -30,13 +30,51 @@ pub trait Collection {
 	fn len(&self) -> usize;
 }
 
-impl<T: Collection + ?Sized> Collection for &T {
+impl<T> Collection for Option<T> {
 	fn len(&self) -> usize {
-		(*self).len()
+		if self.is_some() {
+			1
+		} else {
+			0
+		}
 	}
 
 	fn is_empty(&self) -> bool {
-		(*self).is_empty()
+		self.is_none()
+	}
+}
+
+impl<T, E> Collection for Result<T, E> {
+	fn len(&self) -> usize {
+		if self.is_ok() {
+			1
+		} else {
+			0
+		}
+	}
+
+	fn is_empty(&self) -> bool {
+		self.is_ok()
+	}
+}
+
+impl<T: Collection + ?Sized> Collection for &T {
+	fn len(&self) -> usize {
+		T::len(self)
+	}
+
+	fn is_empty(&self) -> bool {
+		T::is_empty(self)
+	}
+}
+
+impl<T: Collection + ?Sized> Collection for &mut T {
+	fn len(&self) -> usize {
+		T::len(self)
+	}
+
+	fn is_empty(&self) -> bool {
+		T::is_empty(self)
 	}
 }
 
@@ -57,6 +95,16 @@ impl<T> Collection for [T] {
 
 	fn is_empty(&self) -> bool {
 		self.is_empty()
+	}
+}
+
+impl<const N: usize, T> Collection for [T; N] {
+	fn len(&self) -> usize {
+		N
+	}
+
+	fn is_empty(&self) -> bool {
+		N == 0
 	}
 }
 

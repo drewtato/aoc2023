@@ -18,7 +18,7 @@ impl Solver for Solution {
 	type AnswerTwo = A2;
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
-		let [l1, l2] = file
+		let [times, distances] = file
 			.delimiter('\n')
 			.take(2)
 			.map(|line| {
@@ -29,10 +29,7 @@ impl Solver for Solution {
 			})
 			.array()
 			.unwrap();
-		Self {
-			times: l1,
-			distances: l2,
-		}
+		Self { times, distances }
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
