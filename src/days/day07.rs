@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use std::ops::Add;
 
 use crate::helpers::*;
@@ -72,7 +68,6 @@ impl Hand {
 	fn hand_type(cards: [Card; 5]) -> HandType {
 		let mut ns = cards.map(|card| cards.into_iter().filter(|&c| c == card).count());
 		ns.sort_unstable();
-		let jokers = cards.into_iter().filter(|&c| c == Joker).count();
 
 		match ns {
 			[.., 5] => FiveOfAKind,
@@ -208,9 +203,7 @@ impl Solver for Solution {
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
 		self.hands.sort_unstable();
-		// for hand in &self.hands {
-		// 	println!("{hand:?}");
-		// }
+
 		self.hands
 			.iter()
 			.enumerate()
@@ -219,10 +212,7 @@ impl Solver for Solution {
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		let mut joker_hands: Vec<JokerHand> = std::mem::take(&mut self.hands)
-			.into_iter()
-			.map(|hand| hand.into())
-			.collect();
+		let mut joker_hands: Vec<JokerHand> = self.hands.iter().map(|&hand| hand.into()).collect();
 		joker_hands.sort_unstable();
 
 		joker_hands
