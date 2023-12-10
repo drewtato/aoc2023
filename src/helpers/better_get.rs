@@ -1,6 +1,8 @@
 use std::collections::VecDeque;
 use std::ops::{Index, IndexMut};
 
+use super::Grid;
+
 /// Adds methods to index into collections with any integer
 pub trait BetterGet<I, T> {
 	/// Returns a reference to an element if the index is in range
@@ -121,4 +123,20 @@ where
 	fn index_mut(&mut self, index: I) -> &mut Self::Output {
 		self.get_mut(index).unwrap()
 	}
+}
+
+pub fn grid_get<G, I>(grid: &Grid<G>, coordinates: [I; 2]) -> Option<&G>
+where
+	I: TryInto<usize> + Copy,
+{
+	grid.bget(coordinates[0])
+		.and_then(|row| row.bget(coordinates[1]))
+}
+
+pub fn grid_get_mut<G, I>(grid: &mut Grid<G>, coordinates: [I; 2]) -> Option<&mut G>
+where
+	I: TryInto<usize> + Copy,
+{
+	grid.bget_mut(coordinates[0])
+		.and_then(|row| row.bget_mut(coordinates[1]))
 }
