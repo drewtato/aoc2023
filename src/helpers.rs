@@ -22,6 +22,8 @@ pub use std::str::from_utf8;
 pub use itertools::Itertools;
 pub use regex::bytes::Regex;
 
+pub use num_integer::*;
+
 pub use ahash::{AHashMap as HashMap, AHashSet as HashSet, HashMapExt, HashSetExt};
 
 pub use parse_bytes::*;

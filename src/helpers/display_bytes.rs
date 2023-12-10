@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 /// Wrapper to allow displaying a slice as UTF-8
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DisplaySlice<T>(pub T);
 
 impl<T> Display for DisplaySlice<T>
