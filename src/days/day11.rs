@@ -1,5 +1,3 @@
-use std::convert::identity;
-
 use crate::helpers::*;
 
 pub type A1 = impl Display + Debug + Clone;
@@ -7,76 +5,27 @@ pub type A2 = impl Display + Debug + Clone;
 
 #[derive(Debug, Default, Clone)]
 pub struct Solution {
-	galaxies: Vec<(usize, usize)>,
-	empty_rows: Vec<RowOrCol>,
-	empty_cols: Vec<RowOrCol>,
+	file: Vec<u8>,
 }
 
-const SPACE: u8 = b'.';
+// const SPACE: u8 = b'.';
 const GALAXY: u8 = b'#';
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum RowOrCol {
-	Empty,
-	NotEmpty,
-}
-use RowOrCol::*;
+const EOL: u8 = b'\n';
 
 impl Solver for Solution {
 	type AnswerOne = A1;
 	type AnswerTwo = A2;
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
-		let image = file.grid(identity);
-
-		let mut empty_cols = Vec::new();
-
-		for x in 0..image[0].len() {
-			if image.iter().all(|row| row[x] == SPACE) {
-				empty_cols.push(Empty);
-			} else {
-				empty_cols.push(NotEmpty);
-			}
-		}
-
-		let mut empty_rows = Vec::new();
-
-		for row in &image {
-			if row.iter().all(|&c| c == SPACE) {
-				empty_rows.push(Empty);
-			} else {
-				empty_rows.push(NotEmpty);
-			}
-		}
-
-		let galaxies =
-			image
-				.iter()
-				.enumerate()
-				.flat_map(|(y, row)| {
-					row.iter().enumerate().filter_map(move |(x, &cell)| {
-						if cell == GALAXY {
-							Some((y, x))
-						} else {
-							None
-						}
-					})
-				})
-				.collect();
-
-		Self {
-			galaxies,
-			empty_rows,
-			empty_cols,
-		}
+		Self { file }
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
-		self.calcuate_with_expansion(2)
+		self.solve_with_expansion(2)
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		self.calcuate_with_expansion(1_000_000)
+		self.solve_with_expansion(1_000_000)
 	}
 
 	fn run_any<W: std::fmt::Write>(
@@ -93,31 +42,74 @@ impl Solver for Solution {
 }
 
 impl Solution {
-	fn calcuate_with_expansion(&self, expansion: usize) -> usize {
-		let mut total = 0;
-		for (ia, &(gay, gax)) in self.galaxies.iter().enumerate() {
-			for &(gby, gbx) in self.galaxies[ia + 1..].iter() {
-				let (ytop, ybottom) = if gay < gby { (gay, gby) } else { (gby, gay) };
-
-				for y in ytop..ybottom {
-					if self.empty_rows[y] == Empty {
-						total += expansion;
-					} else {
-						total += 1;
-					}
-				}
-
-				let (xtop, xbottom) = if gax < gbx { (gax, gbx) } else { (gbx, gax) };
-
-				for x in xtop..xbottom {
-					if self.empty_cols[x] == Empty {
-						total += expansion;
-					} else {
-						total += 1;
-					}
-				}
-			}
-		}
-		total
+	fn solve_with_expansion(&self, expansion: i64) -> i64 {
+		solve(&self.file, expansion)
 	}
+}
+
+fn solve(file: &[u8], expansion: i64) -> i64 {
+	// Remove last newline
+	let file = file.split_last().unwrap().1;
+
+	let mut galaxies_per_col = [0; 256];
+	let mut galaxies_per_row = [0; 256];
+	let mut galaxies_in_current_row = 0;
+	let mut total_galaxies = 0;
+	let mut y = 0;
+	let mut x = 0;
+
+	for &b in file {
+		match b {
+			EOL => {
+				x = 0;
+				galaxies_per_row[y] = galaxies_in_current_row;
+				y += 1;
+				total_galaxies += galaxies_in_current_row;
+				galaxies_in_current_row = 0;
+			}
+			GALAXY => {
+				galaxies_in_current_row += 1;
+				galaxies_per_col[x] += 1;
+				x += 1;
+			}
+			// SPACE
+			_ => x += 1,
+		}
+	}
+
+	galaxies_per_row[y] = galaxies_in_current_row;
+	total_galaxies += galaxies_in_current_row;
+
+	let height = y + 1;
+	let width = x;
+
+	let mut total = 0i64;
+
+	let mut passed = 0;
+	let mut current = 0;
+	for &galaxies_in_current_col in &galaxies_per_col[..width] {
+		total += passed * galaxies_in_current_col * current;
+		passed += galaxies_in_current_col;
+		total -= (total_galaxies - passed) * galaxies_in_current_col * current;
+		current += if galaxies_in_current_col == 0 {
+			expansion
+		} else {
+			1
+		};
+	}
+
+	let mut passed = 0;
+	let mut current = 0;
+	for &galaxies_in_current_row in &galaxies_per_row[..height] {
+		total += passed * galaxies_in_current_row * current;
+		passed += galaxies_in_current_row;
+		total -= (total_galaxies - passed) * galaxies_in_current_row * current;
+		current += if galaxies_in_current_row == 0 {
+			expansion
+		} else {
+			1
+		};
+	}
+
+	total
 }
