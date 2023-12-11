@@ -52,8 +52,9 @@ fn solve(file: &[u8], expansion: i64) -> i64 {
 	// let mut galaxies_in_current_row = 0;
 	// let mut x = 0;
 
-	// Assume 140 width
-	let x = 140;
+	// Assume square grid, which means the file is x by (x + 1)
+	// Use the quadratic formula
+	let x = ((file.len() * 4 + 1).sqrt() - 1) / 2;
 
 	// for &b in file {
 	// 	match b {
