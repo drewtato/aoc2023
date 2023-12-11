@@ -10,7 +10,7 @@ pub struct Solution {
 
 // const SPACE: u8 = b'.';
 const GALAXY: u8 = b'#';
-const EOL: u8 = b'\n';
+// const EOL: u8 = b'\n';
 
 impl Solver for Solution {
 	type AnswerOne = A1;
@@ -48,40 +48,50 @@ impl Solution {
 }
 
 fn solve(file: &[u8], expansion: i64) -> i64 {
-	// Remove last newline
-	let file = file.split_last().unwrap().1;
-
 	let mut galaxies_per_col = [0; 256];
+	// let mut galaxies_in_current_row = 0;
+	// let mut x = 0;
+
+	// Assume 140 width
+	let x = 140;
+
+	// for &b in file {
+	// 	match b {
+	// 		EOL => {
+	// 			break;
+	// 		}
+	// 		GALAXY => {
+	// 			galaxies_in_current_row += 1;
+	// 			galaxies_per_col[x] += 1;
+	// 			x += 1;
+	// 		}
+	// 		// SPACE
+	// 		_ => x += 1,
+	// 	}
+	// }
+
 	let mut galaxies_per_row = [0; 256];
-	let mut galaxies_in_current_row = 0;
+	// let mut total_galaxies = galaxies_in_current_row;
 	let mut total_galaxies = 0;
-	let mut y = 0;
-	let mut x = 0;
 
-	for &b in file {
-		match b {
-			EOL => {
-				x = 0;
-				galaxies_per_row[y] = galaxies_in_current_row;
-				y += 1;
-				total_galaxies += galaxies_in_current_row;
-				galaxies_in_current_row = 0;
-			}
-			GALAXY => {
-				galaxies_in_current_row += 1;
-				galaxies_per_col[x] += 1;
-				x += 1;
-			}
-			// SPACE
-			_ => x += 1,
-		}
-	}
+	// galaxies_per_row[0] = galaxies_in_current_row;
 
-	galaxies_per_row[y] = galaxies_in_current_row;
-	total_galaxies += galaxies_in_current_row;
-
-	let height = y + 1;
+	// Assume square input
 	let width = x;
+	let height = x;
+	// let mut chunks = file.chunks(width + 1).skip(1);
+	let mut chunks = file.chunks(width + 1);
+
+	// for gpr in galaxies_per_row[1..height].iter_mut() {
+	for gpr in galaxies_per_row[0..height].iter_mut() {
+		for (x, &b) in chunks.next().unwrap()[..width].iter().enumerate() {
+			if b == GALAXY {
+				*gpr += 1;
+				galaxies_per_col[x] += 1;
+			}
+		}
+		total_galaxies += *gpr;
+	}
 
 	let mut total = 0i64;
 
