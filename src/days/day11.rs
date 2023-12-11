@@ -48,44 +48,21 @@ impl Solution {
 }
 
 fn solve(file: &[u8], expansion: i64) -> i64 {
-	let mut galaxies_per_col = [0; 256];
-	// let mut galaxies_in_current_row = 0;
-	// let mut x = 0;
-
 	// Assume square grid, which means the file is x by (x + 1)
 	// Use the quadratic formula
-	let x = ((file.len() * 4 + 1).sqrt() - 1) / 2;
+	let size = ((file.len() * 4 + 1).sqrt() - 1) / 2;
+	if size == 140 {
+		return solve_opt(file, expansion);
+	}
 
-	// for &b in file {
-	// 	match b {
-	// 		EOL => {
-	// 			break;
-	// 		}
-	// 		GALAXY => {
-	// 			galaxies_in_current_row += 1;
-	// 			galaxies_per_col[x] += 1;
-	// 			x += 1;
-	// 		}
-	// 		// SPACE
-	// 		_ => x += 1,
-	// 	}
-	// }
-
-	let mut galaxies_per_row = [0; 256];
-	// let mut total_galaxies = galaxies_in_current_row;
+	let mut scratch_space = vec![0; size * 2];
+	// let mut scratch_space = [0; 140 * 2];
+	let (galaxies_per_col, galaxies_per_row) = scratch_space.split_at_mut(size);
 	let mut total_galaxies = 0;
+	let chunks = file.chunks(size + 1);
 
-	// galaxies_per_row[0] = galaxies_in_current_row;
-
-	// Assume square input
-	let width = x;
-	let height = x;
-	// let mut chunks = file.chunks(width + 1).skip(1);
-	let mut chunks = file.chunks(width + 1);
-
-	// for gpr in galaxies_per_row[1..height].iter_mut() {
-	for gpr in galaxies_per_row[0..height].iter_mut() {
-		for (x, &b) in chunks.next().unwrap()[..width].iter().enumerate() {
+	for (gpr, chunk) in galaxies_per_row.iter_mut().zip(chunks) {
+		for (x, &b) in chunk[..size].iter().enumerate() {
 			if b == GALAXY {
 				*gpr += 1;
 				galaxies_per_col[x] += 1;
@@ -96,30 +73,61 @@ fn solve(file: &[u8], expansion: i64) -> i64 {
 
 	let mut total = 0i64;
 
-	let mut passed = 0;
-	let mut current = 0;
-	for &galaxies_in_current_col in &galaxies_per_col[..width] {
-		total += passed * galaxies_in_current_col * current;
-		passed += galaxies_in_current_col;
-		total -= (total_galaxies - passed) * galaxies_in_current_col * current;
-		current += if galaxies_in_current_col == 0 {
-			expansion
-		} else {
-			1
-		};
+	for galaxies in [galaxies_per_col, galaxies_per_row] {
+		let mut passed = 0;
+		let mut current = 0;
+		for &mut galaxies_in_current in galaxies {
+			total += passed * galaxies_in_current * current;
+			passed += galaxies_in_current;
+			total -= (total_galaxies - passed) * galaxies_in_current * current;
+			current += if galaxies_in_current == 0 {
+				expansion
+			} else {
+				1
+			};
+		}
 	}
 
-	let mut passed = 0;
-	let mut current = 0;
-	for &galaxies_in_current_row in &galaxies_per_row[..height] {
-		total += passed * galaxies_in_current_row * current;
-		passed += galaxies_in_current_row;
-		total -= (total_galaxies - passed) * galaxies_in_current_row * current;
-		current += if galaxies_in_current_row == 0 {
-			expansion
-		} else {
-			1
-		};
+	total
+}
+
+fn solve_opt(file: &[u8], expansion: i64) -> i64 {
+	// Assume square grid, which means the file is x by (x + 1)
+	// Use the quadratic formula
+	// let size = ((file.len() * 4 + 1).sqrt() - 1) / 2;
+	let size = 140;
+
+	let mut scratch_space = [0; 140 * 2];
+	// let mut scratch_space = [0; 140 * 2];
+	let (galaxies_per_col, galaxies_per_row) = scratch_space.split_at_mut(size);
+	let mut total_galaxies = 0;
+	let chunks = file.chunks(size + 1);
+
+	for (gpr, chunk) in galaxies_per_row.iter_mut().zip(chunks) {
+		for (x, &b) in chunk[..size].iter().enumerate() {
+			if b == GALAXY {
+				*gpr += 1;
+				galaxies_per_col[x] += 1;
+			}
+		}
+		total_galaxies += *gpr;
+	}
+
+	let mut total = 0i64;
+
+	for galaxies in [galaxies_per_col, galaxies_per_row] {
+		let mut passed = 0;
+		let mut current = 0;
+		for &mut galaxies_in_current in galaxies {
+			total += passed * galaxies_in_current * current;
+			passed += galaxies_in_current;
+			total -= (total_galaxies - passed) * galaxies_in_current * current;
+			current += if galaxies_in_current == 0 {
+				expansion
+			} else {
+				1
+			};
+		}
 	}
 
 	total
