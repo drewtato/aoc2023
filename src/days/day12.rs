@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use crate::helpers::*;
 
 pub type A1 = impl Display + Debug + Clone;
@@ -37,26 +33,26 @@ impl From<u8> for Spring {
 	}
 }
 
-impl Display for Spring {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Intact => f.write_str("."),
-			Broken => f.write_str("#"),
-			Unknown => f.write_str("?"),
-		}
-	}
-}
+// impl Display for Spring {
+// 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+// 		match self {
+// 			Intact => f.write_str("."),
+// 			Broken => f.write_str("#"),
+// 			Unknown => f.write_str("?"),
+// 		}
+// 	}
+// }
 
-struct DisplaySpringSlice<'a>(&'a [Spring]);
+// struct DisplaySpringSlice<'a>(&'a [Spring]);
 
-impl Display for DisplaySpringSlice<'_> {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		for spring in self.0 {
-			write!(f, "{}", spring)?;
-		}
-		Ok(())
-	}
-}
+// impl Display for DisplaySpringSlice<'_> {
+// 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+// 		for spring in self.0 {
+// 			write!(f, "{}", spring)?;
+// 		}
+// 		Ok(())
+// 	}
+// }
 
 impl Solver for Solution {
 	type AnswerOne = A1;
