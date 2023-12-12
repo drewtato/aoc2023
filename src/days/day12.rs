@@ -1,7 +1,7 @@
 use crate::helpers::*;
 
-pub type A1 = impl Display + Debug + Clone;
-pub type A2 = impl Display + Debug + Clone;
+pub type A1 = u64;
+pub type A2 = u64;
 
 #[derive(Debug, Default, Clone)]
 pub struct Solution {
@@ -20,6 +20,7 @@ enum Spring {
 	Broken,
 	Unknown,
 }
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use Spring::*;
 
 impl From<u8> for Spring {
@@ -76,14 +77,13 @@ impl Solver for Solution {
 		self.records
 			.iter()
 			.map(|Record { row, groups }| arrangements(row, groups, &mut memo))
-			.sum_self()
+			.sum()
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		let mut memo = Memo::new();
 		self.records
-			.iter()
-			.map(|Record { row, groups }| {
+			.par_iter()
+			.map_with(Memo::new(), |memo, Record { row, groups }| {
 				let mut new_row = Vec::with_capacity(row.len() * 5 + 4);
 				new_row.extend_from_slice(row);
 				for _ in 1..5 {
@@ -96,9 +96,9 @@ impl Solver for Solution {
 					new_groups.extend_from_slice(groups);
 				}
 
-				arrangements(&new_row, &new_groups, &mut memo)
+				arrangements(&new_row, &new_groups, memo)
 			})
-			.sum_self()
+			.sum()
 	}
 
 	fn run_any<W: std::fmt::Write>(
