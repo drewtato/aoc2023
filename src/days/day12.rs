@@ -148,11 +148,6 @@ fn arrangements_inner(
 	let mut calculate = || {
 		// let (orig_row, orig_groups) = (row, groups);
 
-		if groups.len() + groups.iter().map(|&item| item as usize).sum::<usize>() > row.len() + 1 {
-			// There is no way to fulfill all groups
-			return 0;
-		}
-
 		let Some(&first) = row.take_first() else {
 			// There's definitely more groups, so this fails
 			return 0;
