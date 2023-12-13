@@ -59,6 +59,8 @@ impl Solver for Solution {
 					continue 'outer;
 				}
 			}
+
+			panic!("no symmetry found");
 		}
 
 		cols + 100 * rows
@@ -98,6 +100,8 @@ impl Solver for Solution {
 					continue 'outer;
 				}
 			}
+
+			panic!("no symmetry found");
 		}
 
 		cols + 100 * rows
