@@ -72,14 +72,13 @@ impl Solver for Solution {
 			// Horizontal
 			for y in 1..grid.len() {
 				let (rows_before, rows_after) = grid.split_at(y);
-				if rows_before
+				let mut iter = rows_before
 					.iter()
 					.rev()
 					.zip(rows_after)
 					.flat_map(|(row_b, row_a)| row_b.iter().zip(row_a))
-					.filter(|&(item_b, item_a)| item_b != item_a)
-					.count() == 1
-				{
+					.filter(|&(item_b, item_a)| item_b != item_a);
+				if let (Some(_), None) = (iter.next(), iter.next()) {
 					rows += y;
 					continue 'outer;
 				}
@@ -87,15 +86,14 @@ impl Solver for Solution {
 
 			// Vertical
 			for x in 1..grid[0].len() {
-				if grid
+				let mut iter = grid
 					.iter()
 					.flat_map(|row| {
 						let (items_before, items_after) = row.split_at(x);
 						items_before.iter().rev().zip(items_after)
 					})
-					.filter(|&(item_b, item_a)| item_b != item_a)
-					.count() == 1
-				{
+					.filter(|&(item_b, item_a)| item_b != item_a);
+				if let (Some(_), None) = (iter.next(), iter.next()) {
 					cols += x;
 					continue 'outer;
 				}
