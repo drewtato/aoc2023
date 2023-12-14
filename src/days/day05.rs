@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use std::convert::identity;
 
 use crate::helpers::*;
@@ -101,7 +97,7 @@ impl Solver for Solution {
 				if index == map.len() {
 					next_ranges.push([start, end]);
 				} else {
-					for line @ &[dest_start, source_start, len] in &map[index..] {
+					for _line @ &[dest_start, source_start, len] in &map[index..] {
 						// println!("Line: {line:?}");
 						let source_end = source_start + len;
 						let dest_end = dest_start + len;
