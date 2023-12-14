@@ -9,12 +9,21 @@ fn main() {
 	let answer_file = format!("inputs/day{DAY:02}/answer.txt");
 	let answer_lines = std::fs::read_to_string(answer_file).unwrap();
 	let expected_ans = answer_lines.lines().nth(PART as usize - 1).unwrap();
-
-	let t = Instant::now();
 	let ans = run(input.as_ref());
-	let time = t.elapsed();
 
-	let ans = format!("{ans}");
-	assert_eq!(ans, expected_ans);
-	println!("{ans:?} ({time:?})");
+	let mut times: Vec<_> = std::iter::repeat_with(|| {
+		let t = Instant::now();
+		let ans = run(input.as_ref());
+		let time = t.elapsed();
+		let ans = format!("{ans}");
+		assert_eq!(ans, expected_ans);
+		time
+	})
+	.take(1000)
+	.collect();
+
+	times.sort_unstable();
+	let median = times[500];
+
+	println!("{ans} ({median:?})");
 }
