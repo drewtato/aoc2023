@@ -90,19 +90,19 @@ impl Solver for Solution {
 		let mut next_ranges = Vec::new();
 
 		for map in &self.maps {
-			println!("Ranges: {ranges:?}");
+			// println!("Ranges: {ranges:?}");
 			for &[mut start, end] in &ranges {
-				println!("Range: {:?}", [start, end]);
+				// println!("Range: {:?}", [start, end]);
 				let index = map
 					.binary_search_by_key(&start, |[_, b, _]| *b)
 					.unwrap_or_else(identity)
 					.saturating_sub(1);
 
 				if index == map.len() {
-					next_ranges.push(dbg_small!([start, end]));
+					next_ranges.push([start, end]);
 				} else {
 					for line @ &[dest_start, source_start, len] in &map[index..] {
-						println!("Line: {line:?}");
+						// println!("Line: {line:?}");
 						let source_end = source_start + len;
 						let dest_end = dest_start + len;
 
@@ -110,9 +110,28 @@ impl Solver for Solution {
 							continue;
 						}
 						if end <= source_start {
+							next_ranges.push([start, end]);
+							start = end;
 							break;
 						}
-						todo!()
+						if start < source_start {
+							next_ranges.push([start, source_start]);
+							start = source_start;
+						}
+						if end <= source_end {
+							next_ranges.push([
+								start + dest_start - source_start,
+								end + dest_start - source_start,
+							]);
+							start = end;
+							break;
+						} else {
+							next_ranges.push([start + dest_start - source_start, dest_end]);
+							start = source_end;
+						}
+					}
+					if start < end {
+						next_ranges.push([start, end]);
 					}
 				}
 			}
