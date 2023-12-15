@@ -1,4 +1,5 @@
 mod parse_bytes;
+use std::hash::{BuildHasher, Hasher};
 use std::io::stdin;
 use std::num::Saturating;
 use std::ops::{Add, AddAssign, Div, Mul};
@@ -223,6 +224,32 @@ where
 {
 	map.get(point[0] as usize)
 		.and_then(|row| row.as_ref().get(point[1] as usize))
+}
+
+/// A hasher that does nothing.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct IdentityHasher(u64);
+
+impl Hasher for IdentityHasher {
+	fn finish(&self) -> u64 {
+		self.0
+	}
+
+	fn write(&mut self, _bytes: &[u8]) {
+		panic!("This hasher only hashes u64");
+	}
+
+	fn write_u64(&mut self, i: u64) {
+		self.0 = i;
+	}
+}
+
+impl BuildHasher for IdentityHasher {
+	type Hasher = Self;
+
+	fn build_hasher(&self) -> Self::Hasher {
+		*self
+	}
 }
 
 pub use crate::dbg_small;

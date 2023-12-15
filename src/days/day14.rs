@@ -1,7 +1,6 @@
-#![allow(dead_code)]
-
 use std::cell::Cell;
 use std::fmt::Write;
+use std::hash::Hasher;
 
 use crate::helpers::*;
 
@@ -28,29 +27,31 @@ impl Solver for Solution {
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
 		self.tilt_north();
-		self.total_weight()
+		self.weight()
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		let mut cycles_iter = 0..CYCLES;
-		for _ in cycles_iter.by_ref().take(PARTIAL) {
+		for _ in 0..PARTIAL {
 			self.cycle();
 		}
 
-		let mut weights = vec![self.total_weight()];
-		for _ in cycles_iter {
-			self.cycle();
+		let mut seen =
+			std::collections::HashMap::with_capacity_and_hasher(100, IdentityHasher::default());
 
-			let sum = self.total_weight();
-			if weights[0] == sum {
-				break;
-			} else {
-				weights.push(sum);
+		for i in PARTIAL.. {
+			self.cycle();
+			let hash = self.hash();
+			if let Some(last) = seen.insert(hash, i) {
+				let cycle_length = i - last;
+				let remaining = CYCLES - i - 1;
+				let cycle_index = remaining % cycle_length;
+				for _ in 0..cycle_index {
+					self.cycle();
+				}
+				return self.weight();
 			}
 		}
-		let cycle_length = weights.len();
-		let offset = (CYCLES - PARTIAL) % cycle_length;
-		weights[offset]
+		unreachable!()
 	}
 
 	fn run_any<W: std::fmt::Write>(
@@ -65,6 +66,12 @@ impl Solver for Solution {
 		}
 	}
 }
+
+const ROUND: u8 = b'O';
+const CUBE: u8 = b'#';
+const VACANT: u8 = b'.';
+const CYCLES: usize = 1_000_000_000;
+const PARTIAL: usize = 144;
 
 impl Solution {
 	fn from_file(file: &[u8]) -> Self {
@@ -279,7 +286,7 @@ impl Solution {
 		)
 	}
 
-	fn total_weight(&mut self) -> u32 {
+	fn weight(&self) -> u32 {
 		self.rounds
 			.iter()
 			.map(|&round| {
@@ -287,6 +294,13 @@ impl Solution {
 				(self.grid_row_len - y - 1) as u32
 			})
 			.sum()
+	}
+
+	fn hash(&mut self) -> u64 {
+		self.rounds.sort_unstable();
+		let mut hasher = rustc_hash::FxHasher::default();
+		hasher.write(bytemuck::cast_slice(self.rounds.as_slice()));
+		hasher.finish()
 	}
 
 	fn index_to_coords(&self, index: usize) -> [isize; 2] {
@@ -314,6 +328,7 @@ impl Solution {
 		(y * self.grid_row_len + x) as usize
 	}
 
+	#[allow(dead_code)]
 	fn print_grid(&self) {
 		let mut lines = Vec::new();
 		for row in self.grid.chunks(self.grid_row_len as usize) {
@@ -344,12 +359,6 @@ impl Solution {
 	// 	self.grid.get_mut(index)
 	// }
 }
-
-const ROUND: u8 = b'O';
-const CUBE: u8 = b'#';
-const VACANT: u8 = b'.';
-const CYCLES: usize = 1_000_000_000;
-const PARTIAL: usize = 1_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 enum SpaceType {

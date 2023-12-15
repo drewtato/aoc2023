@@ -31,6 +31,10 @@ clap_complete = "4.4.4"
 ureq = "2.9.1"
 rayon.workspace = true
 num-integer = "0.1.45"
+rustc-hash.workspace = true
+bytemuck.workspace = true
 
 [workspace.dependencies]
+bytemuck = "1.14.0"
 rayon = "1.8"
+rustc-hash = "1.1.0"
