@@ -33,8 +33,10 @@ rayon.workspace = true
 num-integer = "0.1.45"
 rustc-hash.workspace = true
 bytemuck.workspace = true
+arrayvec.workspace = true
 
 [workspace.dependencies]
+arrayvec = "0.7.4"
 bytemuck = "1.14.0"
 rayon = "1.8"
 rustc-hash = "1.1.0"

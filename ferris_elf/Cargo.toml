@@ -9,3 +9,4 @@ edition = "2021"
 rayon.workspace = true
 rustc-hash.workspace = true
 bytemuck.workspace = true
+arrayvec.workspace = true

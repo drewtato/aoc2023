@@ -1,11 +1,7 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use crate::helpers::*;
 
-pub type A1 = impl Display + Debug + Clone;
-pub type A2 = impl Display + Debug + Clone;
+pub type A1 = u32;
+pub type A2 = usize;
 
 #[derive(Debug, Default, Clone)]
 pub struct Solution {
@@ -16,50 +12,30 @@ impl Solver for Solution {
 	type AnswerOne = A1;
 	type AnswerTwo = A2;
 
-	fn initialize(mut file: Vec<u8>, _: u8) -> Self {
+	fn initialize(file: Vec<u8>, _: u8) -> Self {
 		Self { file }
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
 		let mut total = 0;
-		for step in self.file.trim_ascii_end().delimiter(',') {
-			let value = hash_algorithm(step);
-			total += value as u32;
+		let mut current_hash = 0;
+		for &b in &self.file[..self.file.len() - 1] {
+			if b == b',' {
+				total += current_hash as u32;
+				current_hash = 0;
+			} else {
+				hash_one(&mut current_hash, b);
+			}
 		}
+		total += current_hash as u32;
 		total
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		let mut boxes: [Vec<(&[u8], u8)>; 256] = from_fn_array(|_| Vec::new());
-		for step in self.file.trim_ascii_end().delimiter(',') {
-			if let Some((label, number)) = step.split_once(is(&b'=')) {
-				let hash = hash_algorithm(label);
-				let focal_length: u8 = number.parse().unwrap();
-
-				let b = &mut boxes[hash as usize];
-				let mut replaced = false;
-				for (i, lens) in b.iter_mut().enumerate() {
-					if lens.0 == label {
-						lens.1 = focal_length;
-						replaced = true;
-						break;
-					}
-				}
-				if !replaced {
-					b.push((label, focal_length));
-				}
-			} else {
-				let label = &step[..step.len() - 1];
-				let hash = hash_algorithm(label);
-				let b = &mut boxes[hash as usize];
-
-				for (i, lens) in b.iter_mut().enumerate() {
-					if lens.0 == label {
-						b.remove(i);
-						break;
-					}
-				}
-			}
+		let mut boxes = std::array::from_fn(|_| LensBox::default());
+		let mut input = self.file.trim_ascii_end();
+		while !input.is_empty() {
+			lens_operation(&mut input, &mut boxes);
 		}
 		focusing_power(&boxes)
 	}
@@ -77,24 +53,76 @@ impl Solver for Solution {
 	}
 }
 
-fn focusing_power(boxes: &[Vec<(&[u8], u8)>]) -> usize {
+type LensBox = arrayvec::ArrayVec<Lens, 8>;
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+struct Lens {
+	label: [u8; 8],
+	focal: u8,
+}
+
+impl Lens {
+	fn new(label: [u8; 8], focal: u8) -> Self {
+		Self { label, focal }
+	}
+}
+
+fn lens_operation(step_and_rest: &mut &[u8], boxes: &mut [LensBox; 256]) {
+	let mut label = [0; 8];
+	let mut operation = 0;
+	let mut hash = 0;
+	for c in &mut label {
+		let byte = *step_and_rest.take_first().unwrap();
+		if byte & 0b01000000 != 0 {
+			*c = byte;
+			hash_one(&mut hash, byte);
+		} else {
+			operation = byte;
+			break;
+		}
+	}
+
+	if operation == b'=' {
+		let focal_length = *step_and_rest.take_first().unwrap() - b'0';
+
+		let b = &mut boxes[hash as usize];
+		let mut replaced = false;
+		for lens in b.iter_mut() {
+			if lens.label == label {
+				lens.focal = focal_length;
+				replaced = true;
+				break;
+			}
+		}
+		if !replaced {
+			b.push(Lens::new(label, focal_length));
+		}
+	} else {
+		let b = &mut boxes[hash as usize];
+
+		for (i, lens) in b.iter_mut().enumerate() {
+			if lens.label == label {
+				b.remove(i);
+				break;
+			}
+		}
+	}
+}
+
+fn focusing_power(boxes: &[LensBox]) -> usize {
+	// println!("{}", boxes.iter().map(|b| b.len()).max().unwrap());
 	boxes
 		.iter()
 		.enumerate()
 		.flat_map(|(i, b)| {
 			b.iter()
 				.enumerate()
-				.map(move |(j, &(_, focal_length))| (i + 1) * (j + 1) * focal_length as usize)
+				.map(move |(j, &lens)| (i + 1) * (j + 1) * lens.focal as usize)
 		})
 		.sum_self()
 }
 
-fn hash_algorithm<'a>(step: impl IntoIterator<Item = &'a u8>) -> u8 {
-	let mut value = 0;
-	for &b in step {
-		value += b as u32;
-		value *= 17;
-		value %= 256;
-	}
-	value as u8
+fn hash_one(value: &mut u8, b: u8) {
+	*value = value.wrapping_add(b);
+	*value = value.wrapping_mul(17);
 }
