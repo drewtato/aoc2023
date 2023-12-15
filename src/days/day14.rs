@@ -299,7 +299,9 @@ impl Solution {
 	fn hash(&mut self) -> u64 {
 		self.rounds.sort_unstable();
 		let mut hasher = rustc_hash::FxHasher::default();
-		hasher.write(bytemuck::cast_slice(self.rounds.as_slice()));
+		for &u in &self.rounds {
+			hasher.write_usize(u);
+		}
 		hasher.finish()
 	}
 

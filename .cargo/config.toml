@@ -1,2 +1,5 @@
 [build]
 rustflags = ["-C", "target-cpu=native", "-C", "prefer-dynamic"]
+
+[profile.release]
+debug = true
