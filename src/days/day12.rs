@@ -63,7 +63,7 @@ impl Solver for Solution {
 		let records = file
 			.lines()
 			.map(|line| {
-				let (row, groups) = line.split_once(is(&b' ')).unwrap();
+				let (row, groups) = line.split_once(is(b' ')).unwrap();
 				let row = row.iter().cloned().map(Spring::from).collect();
 				let groups = groups.delimiter(',').multi_parse().unwrap();
 				Record { row, groups }

@@ -67,7 +67,7 @@ impl Solver for Solution {
 	type AnswerTwo = A2;
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
-		let (turns_line, map_lines) = file.split_once(is(&b'\n')).unwrap();
+		let (turns_line, map_lines) = file.split_once(is(b'\n')).unwrap();
 		let turns = turns_line
 			.iter()
 			.map(|&b| b.try_into().unwrap())

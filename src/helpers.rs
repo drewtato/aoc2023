@@ -112,7 +112,7 @@ where
 /// # use aoc2023::helpers::is;
 /// assert!(is("hello")("hello"));
 /// ```
-pub fn is<T: ?Sized>(byte: &T) -> impl for<'b> Fn(&'b T) -> bool + '_
+pub fn is<T>(byte: T) -> impl for<'b> Fn(&'b T) -> bool
 where
 	T: PartialEq,
 {

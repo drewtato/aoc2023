@@ -16,13 +16,13 @@ impl Solver for Solution {
 		let games = file
 			.lines()
 			.map(|line| {
-				let (_, line) = line.split_once(is(&b' ')).unwrap();
-				let (_id, line) = line.split_once(is(&b':')).unwrap();
+				let (_, line) = line.split_once(is(b' ')).unwrap();
+				let (_id, line) = line.split_once(is(b':')).unwrap();
 				line.delimiter(';')
 					.map(|round| {
 						let cubes = round
 							.delimiter(',')
-							.map(|cubes| cubes[1..].split_once(is(&b' ')).unwrap());
+							.map(|cubes| cubes[1..].split_once(is(b' ')).unwrap());
 						let mut red = 0;
 						let mut green = 0;
 						let mut blue = 0;
