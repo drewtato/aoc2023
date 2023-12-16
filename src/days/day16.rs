@@ -37,7 +37,12 @@ impl Solver for Solution {
 			.chain((0..len).into_par_iter().map(|y| ([y, len - 1], [0, -1])))
 			.map_init(
 				|| self.initialize_allocs(),
-				|(tiles, beams), start| self.propogate_laser(start, tiles, beams),
+				|(tiles, beams), start| {
+					for t in &mut *tiles {
+						*t = 0;
+					}
+					self.propogate_laser(start, tiles, beams)
+				},
 			)
 			.max()
 			.unwrap()
