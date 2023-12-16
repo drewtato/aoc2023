@@ -133,15 +133,15 @@ pub trait GridGet<T, I> {
 
 impl<T, I> GridGet<T, I> for Grid<T>
 where
-	I: TryInto<usize> + Copy,
+	I: TryInto<usize>,
 {
 	fn grid_get(&self, coordinates: [I; 2]) -> Option<&T> {
-		self.bget(coordinates[0])
-			.and_then(|row| row.bget(coordinates[1]))
+		let [y, x] = coordinates;
+		self.bget(y).and_then(|row| row.bget(x))
 	}
 
 	fn grid_get_mut(&mut self, coordinates: [I; 2]) -> Option<&mut T> {
-		self.bget_mut(coordinates[0])
-			.and_then(|row| row.bget_mut(coordinates[1]))
+		let [y, x] = coordinates;
+		self.bget_mut(y).and_then(|row| row.bget_mut(x))
 	}
 }
