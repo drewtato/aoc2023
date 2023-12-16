@@ -1,6 +1,6 @@
 use crate::helpers::*;
 
-pub type A1 = u32;
+pub type A1 = u64;
 pub type A2 = usize;
 
 #[derive(Debug, Default, Clone)]
@@ -21,13 +21,13 @@ impl Solver for Solution {
 		let mut current_hash = 0;
 		for &b in &self.file[..self.file.len() - 1] {
 			if b == b',' {
-				total += current_hash as u32;
+				total += current_hash;
 				current_hash = 0;
 			} else {
 				hash_one(&mut current_hash, b);
 			}
 		}
-		total += current_hash as u32;
+		total += current_hash;
 		total
 	}
 
@@ -122,7 +122,8 @@ fn focusing_power(boxes: &[LensBox]) -> usize {
 		.sum_self()
 }
 
-fn hash_one(value: &mut u8, b: u8) {
-	*value = value.wrapping_add(b);
-	*value = value.wrapping_mul(17);
+fn hash_one(value: &mut u64, b: u8) {
+	*value += b as u64;
+	*value *= 17;
+	*value %= 256;
 }
