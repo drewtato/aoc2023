@@ -85,17 +85,17 @@ impl Solution {
 				continue;
 			};
 
-			let dir_0_bit = direction[0].abs() * (direction[0] + 3);
-			let dir_1_bit = direction[1].abs() * (direction[1] + 3);
-			let dir_bit = dir_0_bit << 1 | dir_1_bit >> 1;
-			// println!("{dir_bit:04b}");
+			let dir_0_bit = direction[0].abs();
+			let dir_1_bit = direction[1].abs();
+			let dir_bit = dir_0_bit << 1 | dir_1_bit;
+			// println!("{dir_bit:02b}");
 			let count = &mut tiles[position[0] as usize * self.row_len + position[1] as usize];
 			if *count == 0 {
 				set_tiles += 1;
 				*count |= dir_bit;
 			} else if *count & dir_bit == 0 {
 				*count |= dir_bit;
-			} else {
+			} else if grid_cell != MIRROR_UP && grid_cell != MIRROR_DOWN {
 				continue;
 			}
 
@@ -136,6 +136,19 @@ impl Solution {
 		}
 		// dbg!(tiles.capacity());
 		// dbg!(beams.capacity());
+		// for row in tiles.chunks(self.row_len) {
+		// 	for &tile in row {
+		// 		let c = match tile {
+		// 			0b01 => "-",
+		// 			0b10 => "|",
+		// 			0b11 => "+",
+		// 			0b00 => ".",
+		// 			_ => "?",
+		// 		};
+		// 		print!("{c}");
+		// 	}
+		// 	println!();
+		// }
 		set_tiles
 	}
 
