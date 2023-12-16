@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use std::convert::identity;
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
