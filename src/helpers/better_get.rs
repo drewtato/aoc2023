@@ -125,18 +125,23 @@ where
 	}
 }
 
-pub fn grid_get<G, I>(grid: &Grid<G>, coordinates: [I; 2]) -> Option<&G>
-where
-	I: TryInto<usize> + Copy,
-{
-	grid.bget(coordinates[0])
-		.and_then(|row| row.bget(coordinates[1]))
+pub trait GridGet<T, I> {
+	fn grid_get(&self, coordinates: [I; 2]) -> Option<&T>;
+
+	fn grid_get_mut(&mut self, coordinates: [I; 2]) -> Option<&mut T>;
 }
 
-pub fn grid_get_mut<G, I>(grid: &mut Grid<G>, coordinates: [I; 2]) -> Option<&mut G>
+impl<T, I> GridGet<T, I> for Grid<T>
 where
 	I: TryInto<usize> + Copy,
 {
-	grid.bget_mut(coordinates[0])
-		.and_then(|row| row.bget_mut(coordinates[1]))
+	fn grid_get(&self, coordinates: [I; 2]) -> Option<&T> {
+		self.bget(coordinates[0])
+			.and_then(|row| row.bget(coordinates[1]))
+	}
+
+	fn grid_get_mut(&mut self, coordinates: [I; 2]) -> Option<&mut T> {
+		self.bget_mut(coordinates[0])
+			.and_then(|row| row.bget_mut(coordinates[1]))
+	}
 }

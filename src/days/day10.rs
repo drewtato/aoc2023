@@ -112,7 +112,7 @@ impl Solver for Solution {
 			unreachable!()
 		};
 
-		*grid_get_mut(&mut self.map, self.start).unwrap() = match (one_dir, two_dir) {
+		*self.map.grid_get_mut(self.start).unwrap() = match (one_dir, two_dir) {
 			(Right, Down) | (Down, Right) => b'f',
 			(Right, Left) | (Left, Right) => b'_',
 			(Right, Up) | (Up, Right) => b'l',
@@ -125,7 +125,7 @@ impl Solver for Solution {
 		for steps in 0.. {
 			for (current, current_dir) in [(&mut one, &mut one_dir), (&mut two, &mut two_dir)] {
 				*current = current_dir.add(*current);
-				let next_cell = grid_get_mut(&mut self.map, *current).unwrap();
+				let next_cell = self.map.grid_get_mut(*current).unwrap();
 
 				*current_dir = match (*current_dir, *next_cell) {
 					(Right, b'-') => Right,

@@ -32,7 +32,7 @@ impl Solver for Solution {
 		let mut tiles = HashSet::new();
 		let mut beams = vec![([0, 0], [0, 1])];
 		while let Some((mut position, mut direction)) = beams.pop() {
-			let Some(&grid_cell) = grid_get(&self.file, position) else {
+			let Some(&grid_cell) = self.file.grid_get(position) else {
 				continue;
 			};
 			if !tiles.insert((position, direction)) {
@@ -94,7 +94,7 @@ impl Solver for Solution {
 				let mut tiles = HashSet::new();
 				let mut beams = vec![(pos, dir)];
 				while let Some((mut position, mut direction)) = beams.pop() {
-					let Some(&grid_cell) = grid_get(&self.file, position) else {
+					let Some(&grid_cell) = self.file.grid_get(position) else {
 						continue;
 					};
 					if !tiles.insert((position, direction)) {
