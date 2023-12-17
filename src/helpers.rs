@@ -2,7 +2,7 @@ mod parse_bytes;
 use std::hash::{BuildHasher, Hasher};
 use std::io::stdin;
 use std::num::Saturating;
-use std::ops::{Add, AddAssign, Div, Mul};
+use std::ops::{Add, AddAssign, Div, Mul, Sub};
 use std::str::FromStr;
 
 pub use crate::{AocError, Res, Solver};
@@ -212,9 +212,41 @@ pub fn add<const N: usize, T>(a: [T; N], b: [T; N]) -> [T; N]
 where
 	T: Add<Output = T>,
 {
+	map(a, b, Add::add)
+}
+
+/// Subtracts each element of two arrays.
+pub fn sub<const N: usize, T>(a: [T; N], b: [T; N]) -> [T; N]
+where
+	T: Sub<Output = T>,
+{
+	map(a, b, Sub::sub)
+}
+
+/// Multiplies each element of two arrays.
+pub fn mul<const N: usize, T>(a: [T; N], b: [T; N]) -> [T; N]
+where
+	T: Mul<Output = T>,
+{
+	map(a, b, Mul::mul)
+}
+
+/// Divides each element of two arrays.
+pub fn div<const N: usize, T>(a: [T; N], b: [T; N]) -> [T; N]
+where
+	T: Div<Output = T>,
+{
+	map(a, b, Div::div)
+}
+
+/// Applies an operation to each pair of elements of two arrays.
+pub fn map<const N: usize, T, U, F>(a: [T; N], b: [T; N], mut f: F) -> [U; N]
+where
+	F: FnMut(T, T) -> U,
+{
 	let mut a = a.into_iter();
 	let mut b = b.into_iter();
-	std::array::from_fn(|_| a.next().unwrap() + b.next().unwrap())
+	std::array::from_fn(|_| f(a.next().unwrap(), b.next().unwrap()))
 }
 
 /// Gets an element of a 2D slice.

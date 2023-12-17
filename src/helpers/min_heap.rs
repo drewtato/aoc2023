@@ -49,3 +49,9 @@ impl<T: Ord> FromIterator<T> for MinHeap<T> {
 		}
 	}
 }
+
+impl<A: Ord> Extend<A> for MinHeap<A> {
+	fn extend<I: IntoIterator<Item = A>>(&mut self, iter: I) {
+		self.inner.extend(iter.into_iter().map(Reverse))
+	}
+}
