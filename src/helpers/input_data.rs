@@ -325,6 +325,35 @@ where
 	}
 }
 
+impl<'a, D> DoubleEndedIterator for DelimiterIter<'a, D>
+where
+	D: Delimiter,
+{
+	fn next_back(&mut self) -> Option<Self::Item> {
+		let Self { slice, delimiter } = self;
+		let Some(slice) = slice else {
+			return None;
+		};
+		let mut index = slice.len();
+
+		loop {
+			index = index.wrapping_sub(1);
+			let Some(end_slice) = slice.get(index..) else {
+				let item = *slice;
+				self.slice = None;
+				break Some(item);
+			};
+
+			// println!("{}", DisplaySlice(end_slice));
+
+			if let Some(len) = delimiter.starts_with_delimiter(end_slice) {
+				slice.take(index..).unwrap();
+				break Some(&end_slice[len..]);
+			}
+		}
+	}
+}
+
 impl<'a, D> DelimiterIter<'a, D> {
 	fn new(slice: &'a [u8], delimiter: D) -> Self {
 		Self {

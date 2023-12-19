@@ -14,6 +14,8 @@
 #![feature(impl_trait_in_assoc_type)]
 #![feature(slice_group_by)]
 #![feature(iter_advance_by)]
+#![feature(array_try_map)]
+#![feature(slice_first_last_chunk)]
 
 pub const YEAR: u32 = 2023;
 pub type Res<T> = Result<T, AocError>;

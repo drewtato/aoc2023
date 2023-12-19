@@ -2,6 +2,8 @@ use std::time::Instant;
 
 use ferris_elf::{run, DAY, PART};
 
+const RUNS: usize = 10;
+
 fn main() {
 	let input_file = format!("inputs/day{DAY:02}/input.txt");
 	let input = std::fs::read_to_string(input_file).unwrap();
@@ -19,11 +21,11 @@ fn main() {
 		assert_eq!(ans, expected_ans);
 		time
 	})
-	.take(1000)
+	.take(RUNS)
 	.collect();
 
 	times.sort_unstable();
-	let median = times[500];
+	let median = times[RUNS / 2];
 
 	println!("{ans} ({median:?})");
 }
