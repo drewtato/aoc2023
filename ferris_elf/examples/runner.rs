@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use ferris_elf::{run, DAY, PART};
 
-const RUNS: usize = 10;
+const RUNS: usize = 100;
 
 fn main() {
 	let input_file = format!("inputs/day{DAY:02}/input.txt");

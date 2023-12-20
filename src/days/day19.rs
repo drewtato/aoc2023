@@ -21,47 +21,7 @@ impl Solver for Solution {
 	type AnswerTwo = A2;
 
 	fn initialize(file: Vec<u8>, _: u8) -> Self {
-		let mut lines = file.delimiter(b'\n');
-		lines.next_back().unwrap();
-		let mut workflows = Vec::with_capacity(1000);
-		for _ in 0..3 {
-			workflows.push(Default::default());
-		}
-
-		let start = Name::new(0);
-		let accept = Name::new(1);
-		let reject = Name::new(2);
-		let mut name_map: HashMap<&[u8], Name> = HashMap::with_capacity(1000);
-		name_map.extend([(START, start), (ACCEPTED, accept), (REJECTED, reject)]);
-
-		let mut lines = file.as_slice();
-		loop {
-			if lines[0] == b'\n' {
-				break;
-			}
-			let name_end = lines.iter().position(|&b| b == b'{').unwrap();
-
-			let name = lines.take(..name_end).unwrap();
-			lines.take_first().unwrap();
-
-			let workflow = Workflow::new(&mut lines, &mut name_map, &mut workflows);
-
-			let name = Name::add_to_name_map(name, &mut name_map, &mut workflows);
-			workflows[name.0] = workflow;
-		}
-
-		lines.take(..2).unwrap();
-
-		let offset = file.len() - lines.len() - 1;
-
-		Self {
-			workflows,
-			start,
-			accept,
-			reject,
-			file,
-			offset,
-		}
+		WorkflowParser::default().parse(file).unwrap()
 	}
 
 	fn part_one(&mut self, _: u8) -> Self::AnswerOne {
@@ -73,7 +33,8 @@ impl Solver for Solution {
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
 		let all_possible = PartRange::new(1..4001);
-		let mut stack = vec![(self.start, all_possible)];
+		let mut stack = Vec::with_capacity(15);
+		stack.push((self.start, all_possible));
 		let mut accepted = 0;
 		while let Some((name, part)) = stack.pop() {
 			stack.extend(
@@ -189,34 +150,12 @@ impl IndexMut<Name> for Solution {
 	}
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 struct Workflow {
 	rules: ArrayVec<Rule, 4>,
 	fallback: Name,
 }
 impl Workflow {
-	fn new<'a>(
-		rest: &mut &'a [u8],
-		name_map: &mut HashMap<&'a [u8], Name>,
-		workflows: &mut Vec<Workflow>,
-	) -> Workflow {
-		let mut rules = ArrayVec::new();
-
-		loop {
-			let Some(rule) = Rule::new(rest, name_map, workflows) else {
-				break;
-			};
-			rules.push(rule);
-		}
-
-		let raw_fallback_pos = rest.iter().position(is(b'}')).unwrap();
-		let raw_fallback = rest.take(..raw_fallback_pos).unwrap();
-		rest.take(..2).unwrap();
-
-		let fallback = Name::add_to_name_map(raw_fallback, name_map, workflows);
-		Self { rules, fallback }
-	}
-
 	fn process(&self, part: Part) -> Name {
 		for &rule in &self.rules {
 			if let Some(dest) = rule.process(part) {
@@ -227,50 +166,15 @@ impl Workflow {
 	}
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Rule {
 	category: Category,
 	operation: Operation,
 	number: Number,
 	destination: Name,
 }
+
 impl Rule {
-	fn new<'a>(
-		rule: &mut &'a [u8],
-		name_map: &mut HashMap<&'a [u8], Name>,
-		workflows: &mut Vec<Workflow>,
-	) -> Option<Rule> {
-		let Some(category) = Category::new(rule[0]) else {
-			return None;
-		};
-		let Some(operation) = Operation::new(rule[1]) else {
-			return None;
-		};
-		rule.take(..2).unwrap();
-
-		let mut number = 0;
-		loop {
-			let &d = rule.take_first().unwrap();
-			if d == b':' {
-				break;
-			}
-			number *= 10;
-			number += (d - b'0') as Number;
-		}
-
-		let d_pos = rule.iter().position(is(b',')).unwrap();
-		let d = rule.take(..d_pos).unwrap();
-		rule.take_first().unwrap();
-
-		let destination = Name::add_to_name_map(d, name_map, workflows);
-		Some(Self {
-			category,
-			operation,
-			number,
-			destination,
-		})
-	}
-
 	fn process(self, part: Part) -> Option<Name> {
 		let cat_num = part[self.category];
 		self.operation
@@ -296,6 +200,15 @@ impl Rule {
 		let split_part =
 			(split_part_cat.0 < split_part_cat.1).then_some((self.destination, split_part));
 		(part, split_part)
+	}
+
+	fn new(category: Category, operation: Operation, number: Number, destination: Name) -> Rule {
+		Rule {
+			category,
+			operation,
+			number,
+			destination,
+		}
 	}
 }
 
@@ -348,18 +261,18 @@ impl Operation {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 struct Name(usize);
 
-const START: &[u8] = b"in";
-const ACCEPTED: &[u8] = b"A";
-const REJECTED: &[u8] = b"R";
+const START: [u8; 3] = *b"in\0";
+const ACCEPTED: [u8; 3] = *b"A\0\0";
+const REJECTED: [u8; 3] = *b"R\0\0";
 
 impl Name {
 	fn new(name: usize) -> Self {
 		Self(name)
 	}
 
-	fn add_to_name_map<'a>(
-		raw_name: &'a [u8],
-		name_map: &mut HashMap<&'a [u8], Name>,
+	fn add_to_name_map(
+		raw_name: [u8; 3],
+		name_map: &mut HashMap<[u8; 3], Name>,
 		workflows: &mut Vec<Workflow>,
 	) -> Self {
 		match name_map.entry(raw_name) {
@@ -460,5 +373,182 @@ impl IndexMut<Category> for PartRange {
 			Aerodynamic => &mut self.0[2],
 			Shiny => &mut self.0[3],
 		}
+	}
+}
+
+#[derive(Debug, Clone)]
+struct WorkflowParser {
+	name_map: HashMap<[u8; 3], Name>,
+	workflows: Vec<Workflow>,
+}
+
+impl WorkflowParser {
+	fn parse(mut self, file: Vec<u8>) -> Option<Solution> {
+		let mut slice = file.as_slice();
+
+		let start = Name::new(0);
+		let accept = Name::new(1);
+		let reject = Name::new(2);
+		let mut state = WorkflowState::default();
+
+		loop {
+			let &b = slice.take_first()?;
+
+			state = match state {
+				WorkflowState::Name => {
+					if b == b'\n' {
+						break;
+					}
+					let &b2 = slice.take_first()?;
+					let mut name = [b, b2, 0];
+					let &b3 = slice.take_first()?;
+					if b3 != b'{' {
+						let &bracket = slice.take_first()?;
+						debug_assert_eq!(bracket, b'{');
+						name[2] = b3;
+					}
+					WorkflowState::CategoryOrFallback {
+						name: Name::add_to_name_map(name, &mut self.name_map, &mut self.workflows),
+						workflow: Workflow::default(),
+					}
+				}
+
+				WorkflowState::CategoryOrFallback { name, mut workflow } => {
+					let &b2 = slice.take_first()?;
+					if let Some(operation) = Operation::new(b2) {
+						let category = Category::new(b)?;
+						WorkflowState::Number {
+							name,
+							workflow,
+							category,
+							operation,
+						}
+					} else {
+						if b2 == b'}' {
+							workflow.fallback = Name::add_to_name_map(
+								[b, 0, 0],
+								&mut self.name_map,
+								&mut self.workflows,
+							);
+							slice.take_first()?;
+						} else {
+							let &b3 = slice.take_first()?;
+							let fallback = if b3 == b'}' {
+								[b, b2, 0]
+							} else {
+								let &bracket = slice.take_first()?;
+								debug_assert_eq!(bracket, b'}');
+								[b, b2, b3]
+							};
+
+							let &newline = slice.take_first()?;
+							debug_assert_eq!(newline, b'\n');
+							workflow.fallback = Name::add_to_name_map(
+								fallback,
+								&mut self.name_map,
+								&mut self.workflows,
+							);
+						}
+
+						self.workflows[name.0] = workflow;
+						WorkflowState::Name
+					}
+				}
+
+				WorkflowState::Number {
+					name,
+					mut workflow,
+					category,
+					operation,
+				} => {
+					let mut number = (b - b'0') as Number;
+					loop {
+						let &b = slice.take_first()?;
+						if b == b':' {
+							break;
+						}
+						number *= 10;
+						number += (b - b'0') as Number;
+					}
+
+					let Some(&[b1, b2]) = slice.take(..2) else {
+						panic!()
+					};
+					let destination = if b2 == b',' {
+						[b1, 0, 0]
+					} else {
+						let &b3 = slice.take_first()?;
+						if b3 == b',' {
+							[b1, b2, 0]
+						} else {
+							let &comma = slice.take_first()?;
+							debug_assert_eq!(comma, b',');
+							[b1, b2, b3]
+						}
+					};
+					let destination =
+						Name::add_to_name_map(destination, &mut self.name_map, &mut self.workflows);
+
+					workflow
+						.rules
+						.push(Rule::new(category, operation, number, destination));
+
+					WorkflowState::CategoryOrFallback { name, workflow }
+				}
+			};
+		}
+
+		let offset = file.len() - slice.len();
+
+		Some(Solution {
+			workflows: self.workflows,
+			start,
+			accept,
+			reject,
+			file,
+			offset,
+		})
+	}
+}
+
+impl Default for WorkflowParser {
+	fn default() -> Self {
+		let mut workflows = Vec::with_capacity(600);
+		for _ in 0..3 {
+			workflows.push(Default::default());
+		}
+
+		let start = Name::new(0);
+		let accept = Name::new(1);
+		let reject = Name::new(2);
+
+		let mut name_map = HashMap::with_capacity(600);
+		name_map.extend([(START, start), (ACCEPTED, accept), (REJECTED, reject)]);
+
+		Self {
+			name_map,
+			workflows,
+		}
+	}
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum WorkflowState {
+	Name,
+	CategoryOrFallback {
+		name: Name,
+		workflow: Workflow,
+	},
+	Number {
+		name: Name,
+		workflow: Workflow,
+		category: Category,
+		operation: Operation,
+	},
+}
+
+impl Default for WorkflowState {
+	fn default() -> Self {
+		Self::Name
 	}
 }
