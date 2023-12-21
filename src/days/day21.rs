@@ -23,35 +23,24 @@ impl Solver for Solution {
 		let size = grid.len() as isize;
 		let start = [size / 2, size / 2];
 		*grid.grid_get_mut(start).unwrap() = b'.';
-		run(start, &grid, 64, None)[0].len()
+		PlotExplorer::new(start, &grid).run(64)
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
 		let mut grid = self.file.grid(identity);
 
 		let middle = (grid.len() as isize - 1) / 2;
-		// assert_eq!(*grid.grid_get([middle, middle]).unwrap(), b'S');
 		let start = [middle, middle];
+		// assert_eq!(*grid.grid_get(start).unwrap(), b'S');
 		*grid.grid_get_mut(start).unwrap() = b'.';
 
 		let middle_to_edge = (grid.len() - 1) / 2;
 		let edge_to_edge = grid.len();
 
-		// let full_plots_even = grid.iter().flatten().step_by(2).filter(is(&b'.')).count();
-		// let full_plots_odd = grid
-		// 	.iter()
-		// 	.flatten()
-		// 	.skip(1)
-		// 	.step_by(2)
-		// 	.filter(is(&b'.'))
-		// 	.count();
-
-		let sets = run(start, &grid, middle_to_edge + edge_to_edge, None);
-		let once = sets[0].len();
-		let sets = run(start, &grid, edge_to_edge, Some(sets));
-		let twice = sets[0].len();
-		let sets = run(start, &grid, edge_to_edge, Some(sets));
-		let thrice = sets[0].len();
+		let mut plot_explorer = PlotExplorer::new(start, &grid);
+		let once = plot_explorer.run(middle_to_edge + edge_to_edge);
+		let twice = plot_explorer.run(edge_to_edge);
+		let thrice = plot_explorer.run(edge_to_edge);
 		// let sets = run(start, &grid, edge_to_edge, Some(sets));
 		// let fourth = sets[0].len();
 
@@ -85,42 +74,56 @@ impl Solver for Solution {
 	}
 }
 
-fn run(
-	start: [isize; 2],
-	grid: &Grid<u8>,
+const STEPS: usize = 26_501_365;
+const NEIGHBORS: [[i16; 2]; 4] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+#[derive(Debug, Clone)]
+struct PlotExplorer<'a> {
+	live: Vec<[i16; 2]>,
+	next_live: Vec<[i16; 2]>,
+	seen: HashSet<[i16; 2]>,
+	grid: &'a Grid<u8>,
 	steps: usize,
-	init: Option<[HashSet<[isize; 2]>; 2]>,
-) -> [HashSet<[isize; 2]>; 2] {
-	let [mut stack, mut next_stack] =
-		init.unwrap_or_else(|| [HashSet::from_iter([start]), HashSet::default()]);
-	// println!("{start:?}, {steps}");
-
-	for _ in 0..steps {
-		// println!("{:?}", stack);
-		next_stack.clear();
-		for &pos in &stack {
-			let y = pos[0];
-			let x = pos[1];
-			for [dy, dx] in [[-1, 0], [1, 0], [0, -1], [0, 1]] {
-				let ny = y + dy;
-				let nx = x + dx;
-
-				let Some(&c) = grid.grid_get([
-					ny.rem_euclid(grid.len() as isize),
-					nx.rem_euclid(grid.len() as isize),
-				]) else {
-					continue;
-				};
-				if c == b'.' {
-					next_stack.insert([ny, nx]);
-				}
-			}
-		}
-		swap(&mut stack, &mut next_stack);
-	}
-	// println!("{:?}", stack.iter().sorted().collect_vec());
-	// println!("{}", stack.len());
-	[stack, next_stack]
+	next_steps: usize,
 }
 
-const STEPS: usize = 26_501_365;
+impl<'a> PlotExplorer<'a> {
+	fn new(start: [isize; 2], grid: &'a Grid<u8>) -> Self {
+		let start = start.map(|n| n as i16);
+		let mut live = Vec::with_capacity(1_000);
+		live.push(start);
+		let next_live = Vec::with_capacity(1_000);
+		let mut seen = HashSet::with_capacity(100_000);
+		seen.insert(start);
+		Self {
+			live,
+			next_live,
+			seen,
+			grid,
+			steps: 1,
+			next_steps: 0,
+		}
+	}
+
+	fn run(&mut self, steps: usize) -> usize {
+		for _i in 0..steps {
+			// dbg!(i, self.live.len(), self.next_live.len(), self.seen.len());
+			self.next_live.clear();
+			for &[y, x] in &self.live {
+				for [dy, dx] in NEIGHBORS {
+					let new_pos = [y + dy, x + dx];
+					let grid_pos = new_pos.map(|p| p.rem_euclid(self.grid.len() as i16));
+					if *self.grid.grid_get(grid_pos).unwrap() == b'#' || !self.seen.insert(new_pos)
+					{
+						continue;
+					}
+					self.next_live.push(new_pos);
+				}
+			}
+			self.next_steps += self.next_live.len();
+			swap(&mut self.steps, &mut self.next_steps);
+			swap(&mut self.live, &mut self.next_live);
+		}
+		self.steps
+	}
+}
