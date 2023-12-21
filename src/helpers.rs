@@ -81,7 +81,10 @@ where
 
 /// Waits for a newline from stdin.
 pub fn pause() {
-	stdin().lines().next().unwrap().unwrap();
+	let line = stdin().lines().next().unwrap().unwrap();
+	if line.trim() == "q" {
+		std::process::exit(0)
+	}
 }
 
 /// [`std::iter::Sum`] but without the issue of needing to specify the output type.
