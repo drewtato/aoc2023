@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use crate::helpers::*;
 
 pub type A1 = usize;
@@ -27,14 +23,14 @@ impl Solver for Solution {
 				.array()
 				.unwrap();
 			let [x, y, z] = a;
-			let mut start = Point { z, y, x };
+			let start = Point { z, y, x };
 			let b = b
 				.delimiter(',')
 				.map(|n| n.parse().unwrap())
 				.array()
 				.unwrap();
 			let [x, y, z] = b;
-			let mut end = Point { z, y, x };
+			let end = Point { z, y, x };
 			let mut both = [start, end];
 			both.sort_unstable();
 			let [start, end] = both;
