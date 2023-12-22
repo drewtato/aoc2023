@@ -1,5 +1,3 @@
-use std::convert::identity;
-
 use crate::helpers::*;
 
 pub type A1 = usize;
@@ -26,7 +24,7 @@ impl Solver for Solution {
 		PlotExplorer::new(start, &grid).run(64)
 	}
 
-	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
+	fn part_two(&mut self, d: u8) -> Self::AnswerTwo {
 		let mut grid = self.file.grid(identity);
 
 		let middle = (grid.len() as isize - 1) / 2;
@@ -38,11 +36,19 @@ impl Solver for Solution {
 		let edge_to_edge = grid.len();
 
 		let mut plot_explorer = PlotExplorer::new(start, &grid);
-		let once = plot_explorer.run(middle_to_edge + edge_to_edge);
+		let zero = plot_explorer.run(middle_to_edge);
+		let once = plot_explorer.run(edge_to_edge);
 		let twice = plot_explorer.run(edge_to_edge);
 		let thrice = plot_explorer.run(edge_to_edge);
 		// let sets = run(start, &grid, edge_to_edge, Some(sets));
 		// let fourth = sets[0].len();
+
+		if d > 0 {
+			println!("zero: {zero}");
+			println!("once: {once}");
+			println!("twice: {twice}");
+			println!("thrice: {thrice}");
+		}
 
 		// dbg!(thrice);
 		let target = (STEPS - middle_to_edge) / edge_to_edge;

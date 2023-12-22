@@ -10,6 +10,7 @@ pub use crate::{AocError, Res, Solver};
 pub use std::array::{from_fn as from_fn_array, try_from_fn};
 pub use std::cmp::Reverse;
 pub use std::collections::{BTreeMap, BTreeSet, BinaryHeap, LinkedList, VecDeque};
+pub use std::convert::identity;
 pub use std::fmt::{Debug, Display};
 pub use std::iter::{
 	empty as empty_iter, from_coroutine as gen_iter, from_fn as from_fn_iter, once as once_iter,
