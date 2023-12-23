@@ -239,6 +239,7 @@ const FLOOR: usize = usize::MAX - 1;
 const EMPTY: usize = usize::MAX;
 const FLOOR_SIZE: usize = 10;
 
+#[allow(dead_code)]
 fn print_map(map: &[[[usize; FLOOR_SIZE]; FLOOR_SIZE]]) {
 	for slice in map.iter().rev() {
 		for row in slice {
