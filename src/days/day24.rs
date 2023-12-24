@@ -1,7 +1,3 @@
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use itertools::izip;
 use z3::ast::{Ast, Int};
 use z3::{Config, Context};
