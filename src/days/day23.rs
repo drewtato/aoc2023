@@ -159,32 +159,32 @@ impl Solver for Solution {
 		max + self.end.1
 	}
 
-	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
+	fn part_two(&mut self, d: u8) -> Self::AnswerTwo {
 		let mut stack = ArrayVec::<_, 50>::new();
 		stack.push((0, 0, Down));
 
 		let mut visited = [false; 50];
 
 		let end_index = self.end.0;
-		let max_len = self.max_len;
+		// let max_len = self.max_len;
 		let mut nodes_remaining = self.graph.len() as i64 - 2;
 
+		let mut max_nodes = 0;
 		let mut max = 0;
 		while let Some((mut node_index, mut distance, mut direction)) = stack.pop() {
 			visited[node_index] = false;
 			nodes_remaining += 1;
-			if direction == Up {
+			if direction == Left {
 				continue;
 			}
 
 			loop {
 				let (next_index, next_distance) = self.graph[node_index][direction];
-				if (next_index == BLOCKED)
-					|| visited[next_index]
-					|| nodes_remaining * max_len < max - distance - next_distance
+				if (next_index == BLOCKED) || visited[next_index]
+				// || nodes_remaining * max_len < max - distance - next_distance
 				{
 					direction.cw();
-					if direction == Up {
+					if direction == Left {
 						break;
 					}
 					continue;
@@ -194,9 +194,12 @@ impl Solver for Solution {
 
 				if next_index == end_index {
 					distance += next_distance;
+					if d > 0 && distance > max {
+						max_nodes = nodes_remaining;
+					}
 					max = max.max(distance);
 					direction.cw();
-					if direction == Up {
+					if direction == Left {
 						break;
 					}
 					distance -= next_distance;
@@ -210,8 +213,12 @@ impl Solver for Solution {
 
 				node_index = next_index;
 				distance += next_distance;
-				direction = Up;
+				direction = Left;
 			}
+		}
+
+		if d > 0 {
+			println!("{max_nodes}");
 		}
 		max + self.end.1
 	}

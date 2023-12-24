@@ -5,3 +5,4 @@ API_KEY
 /ferris_elf/src
 /flamegraph.svg
 /.vscode
+/.z3-trace

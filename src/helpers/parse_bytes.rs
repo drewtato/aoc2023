@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use atoi::{FromRadix10, FromRadix10Signed, FromRadix10SignedChecked};
+use num_rational::Rational64;
 
 /// Trait for parsing bytes like they are `str`.
 ///
@@ -37,6 +38,13 @@ impl FromBytes for bool {
 			b"false" => false,
 			_ => return None,
 		})
+	}
+}
+
+impl FromBytes for Rational64 {
+	fn from_bytes(bytes: &[u8]) -> Option<Self> {
+		let n: i64 = bytes.parse()?;
+		Some(Rational64::from(n))
 	}
 }
 
