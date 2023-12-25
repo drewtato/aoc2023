@@ -72,23 +72,21 @@ impl Solver for Solution {
 	}
 
 	fn part_two(&mut self, _: u8) -> Self::AnswerTwo {
-		let mut config = Config::new();
-		config.set_model_generation(true);
-		let c = Context::new(&config);
+		let c = Context::new(&Config::new());
 
 		let ps = ["pz", "py", "px"].map(|p| Int::new_const(&c, p));
 		let vs = ["vz", "vy", "vx"].map(|v| Int::new_const(&c, v));
 		let ts = ["t1", "t2", "t3"].map(|t| Int::new_const(&c, t));
 
-		let hail: [_; 3] = self.hailstones.array_chunks().next().unwrap().map(|h| {
-			(
-				h.pos.map(|n| Int::from_i64(&c, n as _)),
-				h.vel.map(|n| Int::from_i64(&c, n as _)),
-			)
-		});
+		let hail: [_; 5] = self
+			.hailstones
+			.array_chunks()
+			.next()
+			.unwrap()
+			.map(|h| [h.pos, h.vel].map(|pv| pv.map(|n| Int::from_i64(&c, n as _))));
 
 		let solver = z3::Solver::new(&c);
-		for ((p1, v1), t1) in izip!(&hail, &ts) {
+		for ([p1, v1], t1) in izip!(&hail, &ts) {
 			for (p1z, v1z, psz, vsz) in izip!(p1, v1, &ps, &vs) {
 				solver.assert(&(p1z + v1z * t1)._eq(&(psz + vsz * t1)));
 			}
